@@ -241,7 +241,7 @@ def calculate_periods(histories, ranking_data, dates):
     for label, days in zip(PERIOD_LABELS, PERIOD_DAYS):
         # 당일/전일: 랭킹 데이터 사용 (순매수)
         if label in ("당일", "전일") and ranking_data.get(label):
-            net_result[label] = ranking_data[label][:TOP_N]
+            net_result[label] = ranking_data[label]  # 전체 보존
         else:
             # 기간의 영업일 범위 결정
             if label == "당일":
@@ -267,7 +267,7 @@ def calculate_periods(histories, ranking_data, dates):
                     "buy_volume": total_volume,
                 })
             net_rows.sort(key=lambda x: x["buy_amount"], reverse=True)
-            net_result[label] = net_rows[:TOP_N]
+            net_result[label] = net_rows  # 전체 보존 (TOP_N은 HTML 생성 시 적용)
 
         # 지분율 변동: 항상 이력에서 계산
         if label == "당일":
@@ -304,7 +304,7 @@ def calculate_periods(histories, ranking_data, dates):
                 })
 
         own_rows.sort(key=lambda x: x["rate_change"], reverse=True)
-        own_result[label] = own_rows[:TOP_N]
+        own_result[label] = own_rows  # 전체 보존
 
     return net_result, own_result
 
@@ -383,20 +383,21 @@ def generate_html(today_str, net_data, own_data, price_data):
             checked = " checked" if i == 0 else ""
             radios.append(f'<input type="radio" name="{prefix}p" id="{rid}"{checked} class="sr">')
             labels.append(f'<label for="{rid}" class="tab-btn">{period}</label>')
-            rows = net_data.get(period, [])
+            all_rows = net_data.get(period, [])
+            rows = all_rows[:TOP_N]
             summary_html = ""
-            if rows:
-                top_name = rows[0]['name']
-                total = sum(r['buy_amount'] for r in rows)
-                kospi_t = sum(r['buy_amount'] for r in rows if r['market'] == 'KOSPI')
-                kosdaq_t = sum(r['buy_amount'] for r in rows if r['market'] == 'KOSDAQ')
+            if all_rows:
+                top_name = all_rows[0]['name']
+                total = sum(r['buy_amount'] for r in all_rows)
+                kospi_t = sum(r['buy_amount'] for r in all_rows if r['market'] == 'KOSPI')
+                kosdaq_t = sum(r['buy_amount'] for r in all_rows if r['market'] == 'KOSDAQ')
                 tc = "green" if total >= 0 else "red"
                 kc = "green" if kospi_t >= 0 else "red"
                 dc = "green" if kosdaq_t >= 0 else "red"
                 summary_html = (
                     '<div class="summary">'
                     f'<div class="stat-card"><div class="label">1위 종목</div><div class="value accent">{top_name}</div></div>'
-                    f'<div class="stat-card"><div class="label">Top10 합계</div><div class="value {tc}">{fmt(total)}</div></div>'
+                    f'<div class="stat-card"><div class="label">전체 합계</div><div class="value {tc}">{fmt(total)}</div></div>'
                     f'<div class="stat-card"><div class="label">KOSPI</div><div class="value {kc}">{fmt(kospi_t)}</div></div>'
                     f'<div class="stat-card"><div class="label">KOSDAQ</div><div class="value {dc}">{fmt(kosdaq_t)}</div></div>'
                     '</div>\n'
@@ -445,18 +446,19 @@ def generate_html(today_str, net_data, own_data, price_data):
             checked = " checked" if i == 0 else ""
             radios.append(f'<input type="radio" name="{prefix}p" id="{rid}"{checked} class="sr">')
             labels.append(f'<label for="{rid}" class="tab-btn">{period}</label>')
-            rows = own_data.get(period, [])
+            all_rows = own_data.get(period, [])
+            rows = all_rows[:TOP_N]
             summary_html = ""
-            if rows:
-                top_name = rows[0]['name']
-                max_chg = max(r['rate_change'] for r in rows)
-                avg_chg = sum(r['rate_change'] for r in rows) / len(rows)
+            if all_rows:
+                top_name = all_rows[0]['name']
+                max_chg = max(r['rate_change'] for r in all_rows)
+                avg_chg = sum(r['rate_change'] for r in all_rows) / len(all_rows)
                 summary_html = (
                     '<div class="summary">'
                     f'<div class="stat-card"><div class="label">1위 종목</div><div class="value accent">{top_name}</div></div>'
                     f'<div class="stat-card"><div class="label">최대 증가</div><div class="value green">{fmt_pct(max_chg)}</div></div>'
                     f'<div class="stat-card"><div class="label">평균 증가</div><div class="value green">{fmt_pct(avg_chg)}</div></div>'
-                    f'<div class="stat-card"><div class="label">종목 수</div><div class="value amber">{len(rows)}</div></div>'
+                    f'<div class="stat-card"><div class="label">종목 수</div><div class="value amber">{len(all_rows)}</div></div>'
                     '</div>\n'
                 )
             if rows:
