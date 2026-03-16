@@ -1,0 +1,665 @@
+#!/usr/bin/env python3
+"""UTONG - 외국인 수급 추적 대시보드 생성기
+
+네이버 금융에서 데이터를 수집하여 자체 완결형 HTML 대시보드를 생성한다.
+- 당일/전일: 네이버 외국인 순매수 랭킹 (정확한 거래대금)
+- 3일~3개월: 개별 종목 일별 외국인 매매 이력에서 계산
+- 지분율: 개별 종목 일별 보유율 변동에서 계산
+"""
+
+import json
+import re
+import time
+import sys
+from datetime import datetime
+from pathlib import Path
+
+import requests
+from bs4 import BeautifulSoup
+
+# ──────────────────────────────────────────────
+# 설정
+# ──────────────────────────────────────────────
+SLEEP = 0.2
+TOP_N = 10
+HISTORY_PAGES = 4  # 페이지당 ~20영업일, 4페이지 ≈ 3개월
+OUTPUT_DIR = Path(__file__).parent / "public"
+OUTPUT_DIR.mkdir(exist_ok=True)
+OUTPUT = OUTPUT_DIR / "index.html"
+
+UA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
+HEADERS = {"User-Agent": UA}
+
+PERIOD_LABELS = ["당일", "전일", "최근 3일", "최근 1주일", "최근 2주일", "최근 1개월", "최근 3개월"]
+PERIOD_DAYS = [1, 1, 3, 5, 10, 21, 63]  # 영업일 기준 슬라이싱 수
+
+
+# ──────────────────────────────────────────────
+# 유틸리티
+# ──────────────────────────────────────────────
+def log(msg):
+    print(f"[{datetime.now().strftime('%H:%M:%S')}] {msg}", flush=True)
+
+
+def naver_get(url, retries=1):
+    for attempt in range(retries + 1):
+        try:
+            time.sleep(SLEEP)
+            resp = requests.get(url, headers=HEADERS, timeout=15)
+            if resp.status_code == 200:
+                return resp
+        except Exception as e:
+            if attempt == retries:
+                log(f"  요청 실패: {url[:80]} → {e}")
+    return None
+
+
+def parse_int(s):
+    s = s.strip().replace(",", "")
+    if not s or s == "-":
+        return 0
+    s = re.sub(r"[^0-9\-+]", "", s)
+    try:
+        return int(s)
+    except ValueError:
+        return 0
+
+
+def parse_float(s):
+    s = s.strip().replace(",", "").replace("%", "").replace("%p", "")
+    try:
+        return float(s)
+    except ValueError:
+        return 0.0
+
+
+# ──────────────────────────────────────────────
+# 1. 외국인 순매수 랭킹 (당일/전일)
+# ──────────────────────────────────────────────
+def fetch_rankings():
+    """네이버 외국인 순매수 Top 20 (당일/전일, KOSPI+KOSDAQ)."""
+    rankings = {"당일": [], "전일": []}
+    dates = {"당일": None, "전일": None}
+
+    for sosok, market in [("01", "KOSPI"), ("02", "KOSDAQ")]:
+        url = f"https://finance.naver.com/sise/sise_deal_rank_iframe.naver?sosok={sosok}&investor_gubun=9000&type=buy"
+        log(f"랭킹 수집: {market}")
+        resp = naver_get(url)
+        if resp is None:
+            continue
+
+        soup = BeautifulSoup(resp.content, "html.parser", from_encoding="euc-kr")
+        tables = soup.find_all("table", class_="type_1")
+
+        # 테이블 0/1 = 전일, 테이블 2/3 = 당일
+        period_table_map = []
+        for i, t in enumerate(tables):
+            prev = t.find_previous_sibling()
+            if prev:
+                dt = prev.get_text(strip=True)
+                if re.match(r"\d{2}\.\d{2}\.\d{2}", dt):
+                    date_str = "20" + dt.replace(".", "")
+                    period_table_map.append((i, date_str, t))
+
+        # 날짜순 정렬 → 앞=전일, 뒤=당일
+        period_table_map.sort(key=lambda x: x[1])
+        if len(period_table_map) >= 2:
+            for (_, ds, t), period_key in zip(period_table_map, ["전일", "당일"]):
+                if dates[period_key] is None:
+                    dates[period_key] = ds
+                rows = _parse_ranking_table(t, market)
+                rankings[period_key].extend(rows)
+        elif len(period_table_map) == 1:
+            _, ds, t = period_table_map[0]
+            dates["당일"] = ds
+            rankings["당일"].extend(_parse_ranking_table(t, market))
+
+    # 금액 내림차순 정렬
+    for k in rankings:
+        rankings[k].sort(key=lambda x: x["buy_amount"], reverse=True)
+
+    return rankings, dates
+
+
+def _parse_ranking_table(table, market):
+    rows = []
+    for tr in table.find_all("tr"):
+        a = tr.find("a", href=re.compile(r"code="))
+        if not a:
+            continue
+        code = re.search(r"code=(\w+)", a["href"]).group(1)
+        name = a.get_text(strip=True)
+        cells = [td.get_text(strip=True) for td in tr.find_all("td")]
+        if len(cells) < 4:
+            continue
+        # cells: [종목명, 수량(천주), 금액(백만원), 당일거래량]
+        volume_1k = parse_int(cells[1])
+        amount_mil = parse_int(cells[2])
+        rows.append({
+            "code": code,
+            "name": name,
+            "market": market,
+            "buy_amount": amount_mil * 1_000_000,  # 원
+            "buy_volume": volume_1k * 1000,  # 주
+        })
+    return rows
+
+
+# ──────────────────────────────────────────────
+# 2. 개별 종목 외국인 일별 매매 이력
+# ──────────────────────────────────────────────
+def fetch_stock_history(code, pages=HISTORY_PAGES):
+    """종목별 일별 외국인 매매 데이터 (최대 ~80영업일)."""
+    all_rows = []
+    for page in range(1, pages + 1):
+        url = f"https://finance.naver.com/item/frgn.naver?code={code}&page={page}"
+        resp = naver_get(url)
+        if resp is None:
+            continue
+
+        soup = BeautifulSoup(resp.content, "html.parser", from_encoding="euc-kr")
+        # 외국인 매매 데이터 테이블 찾기
+        target = None
+        for t in soup.find_all("table"):
+            txt = t.get_text()
+            if "기관" in txt and "외국인" in txt and "보유주수" in txt:
+                target = t
+                break
+        if target is None:
+            continue
+
+        for tr in target.find_all("tr"):
+            cells = [td.get_text(strip=True) for td in tr.find_all("td")]
+            if len(cells) < 9:
+                continue
+            if not re.match(r"\d{4}\.\d{2}\.\d{2}", cells[0]):
+                continue
+
+            date_str = cells[0].replace(".", "")
+            close = parse_int(cells[1])
+            if close == 0:
+                continue
+            change_rate = parse_float(cells[3])
+            volume = parse_int(cells[4])
+            inst_net = parse_int(cells[5])
+            foreign_net = parse_int(cells[6])
+            hold_shares = parse_int(cells[7])
+            hold_rate = parse_float(cells[8])
+
+            all_rows.append({
+                "date": date_str,
+                "close": close,
+                "change_rate": change_rate,
+                "volume": volume,
+                "foreign_net": foreign_net,
+                "hold_shares": hold_shares,
+                "hold_rate": hold_rate,
+            })
+
+    # 날짜 내림차순 정렬, 중복 제거
+    seen = set()
+    unique = []
+    for r in sorted(all_rows, key=lambda x: x["date"], reverse=True):
+        if r["date"] not in seen:
+            seen.add(r["date"])
+            unique.append(r)
+    return unique
+
+
+def fetch_all_histories(stock_meta):
+    """모든 종목의 일별 이력을 수집한다."""
+    histories = {}
+    total = len(stock_meta)
+    for i, (code, meta) in enumerate(stock_meta.items()):
+        log(f"  일별 이력 수집: {meta['name']} ({i+1}/{total})")
+        history = fetch_stock_history(code)
+        if history:
+            histories[code] = {
+                "name": meta["name"],
+                "market": meta["market"],
+                "history": history,
+            }
+    return histories
+
+
+# ──────────────────────────────────────────────
+# 3. 기간별 순매수/지분율 계산
+# ──────────────────────────────────────────────
+def calculate_periods(histories, ranking_data, dates):
+    """일별 이력에서 기간별 순매수 금액 Top 10 / 지분율 변동 Top 10 계산."""
+    # 모든 고유 영업일 수집 (오름차순)
+    all_dates = sorted(set(
+        r["date"] for data in histories.values() for r in data["history"]
+    ))
+
+    if not all_dates:
+        return {k: [] for k in PERIOD_LABELS}, {k: [] for k in PERIOD_LABELS}
+
+    net_result = {}
+    own_result = {}
+
+    for label, days in zip(PERIOD_LABELS, PERIOD_DAYS):
+        # 당일/전일: 랭킹 데이터 사용 (순매수)
+        if label in ("당일", "전일") and ranking_data.get(label):
+            net_result[label] = ranking_data[label][:TOP_N]
+        else:
+            # 기간의 영업일 범위 결정
+            if label == "당일":
+                target_dates = set(all_dates[-1:])
+            elif label == "전일":
+                target_dates = set(all_dates[-2:-1]) if len(all_dates) >= 2 else set()
+            else:
+                target_dates = set(all_dates[-days:]) if len(all_dates) >= days else set(all_dates)
+
+            # 순매수 계산
+            net_rows = []
+            for code, data in histories.items():
+                period_data = [r for r in data["history"] if r["date"] in target_dates]
+                if not period_data:
+                    continue
+                total_amount = sum(r["foreign_net"] * r["close"] for r in period_data)
+                total_volume = sum(r["foreign_net"] for r in period_data)
+                net_rows.append({
+                    "code": code,
+                    "name": data["name"],
+                    "market": data["market"],
+                    "buy_amount": total_amount,
+                    "buy_volume": total_volume,
+                })
+            net_rows.sort(key=lambda x: x["buy_amount"], reverse=True)
+            net_result[label] = net_rows[:TOP_N]
+
+        # 지분율 변동: 항상 이력에서 계산
+        if label == "당일":
+            target_dates_own = all_dates[-1:]
+            ref_dates_own = all_dates[-2:-1] if len(all_dates) >= 2 else []
+        elif label == "전일":
+            target_dates_own = all_dates[-2:-1] if len(all_dates) >= 2 else []
+            ref_dates_own = all_dates[-3:-2] if len(all_dates) >= 3 else []
+        else:
+            target_dates_own = all_dates[-1:]
+            start_idx = max(0, len(all_dates) - days)
+            ref_dates_own = [all_dates[start_idx]]
+
+        own_rows = []
+        if target_dates_own and ref_dates_own:
+            end_date = target_dates_own[0]
+            start_date = ref_dates_own[0]
+
+            for code, data in histories.items():
+                history_map = {r["date"]: r for r in data["history"]}
+                r_end = history_map.get(end_date)
+                r_start = history_map.get(start_date)
+                if r_end is None or r_start is None:
+                    continue
+                rate_change = round(r_end["hold_rate"] - r_start["hold_rate"], 2)
+                hold_change = r_end["hold_shares"] - r_start["hold_shares"]
+                own_rows.append({
+                    "code": code,
+                    "name": data["name"],
+                    "market": data["market"],
+                    "rate_end": r_end["hold_rate"],
+                    "rate_change": rate_change,
+                    "hold_change": hold_change,
+                })
+
+        own_rows.sort(key=lambda x: x["rate_change"], reverse=True)
+        own_result[label] = own_rows[:TOP_N]
+
+    return net_result, own_result
+
+
+# ──────────────────────────────────────────────
+# 4. 현재가 보충 (Naver Polling API)
+# ──────────────────────────────────────────────
+def fetch_prices(codes):
+    """네이버 실시간 API에서 현재가를 조회한다."""
+    log(f"현재가 조회: {len(codes)}개 종목")
+    price_map = {}
+    for code in codes:
+        url = f"https://polling.finance.naver.com/api/realtime/domestic/stock/{code}"
+        resp = naver_get(url)
+        if resp is None:
+            continue
+        try:
+            data = resp.json()
+            item = data["datas"][0]
+            price_map[code] = {
+                "price": parse_int(item.get("closePrice", "0")),
+                "change": parse_float(item.get("fluctuationsRatio", "0")),
+                "volume": parse_int(item.get("accumulatedTradingVolume", "0")),
+            }
+        except (KeyError, IndexError, ValueError):
+            continue
+    return price_map
+
+
+# ──────────────────────────────────────────────
+# 5. HTML 생성
+# ──────────────────────────────────────────────
+def generate_html(today_str, net_data, own_data, price_data):
+    """자체 완결형 HTML 파일 생성. 테이블은 Python에서 미리 렌더링 (JS 불필요)."""
+    if today_str:
+        date_display = f"{today_str[:4]}.{today_str[4:6]}.{today_str[6:]}"
+    else:
+        date_display = datetime.now().strftime("%Y.%m.%d")
+
+    # ── 포매팅 헬퍼 ──
+    def fmt(v):
+        a = v / 1e8
+        s = f"{abs(a):,.0f}" if abs(a) >= 1000 else f"{abs(a):,.1f}"
+        return f"{'+'if a >= 0 else '-'}{s}억"
+
+    def fmt_vol(v):
+        if abs(v) >= 1e6:
+            return f"{'+' if v >= 0 else ''}{v/1e6:.1f}M"
+        if abs(v) >= 1e3:
+            return f"{'+' if v >= 0 else ''}{v/1e3:.0f}K"
+        return f"{'+' if v >= 0 else ''}{v:,.0f}"
+
+    def fmt_price(v):
+        return f"{v:,.0f}원" if v else "-"
+
+    def fmt_pct(v):
+        return f"{'+' if v >= 0 else ''}{v:.2f}%p"
+
+    def fmt_rate(v):
+        return f"{v:.2f}%"
+
+    def val_cls(v):
+        return "positive" if v > 0 else ("negative" if v < 0 else "")
+
+    def mkt_badge(m):
+        return f'<span class="badge badge-{m.lower()}">{m}</span>'
+
+    # ── 순매수 패널 (7개 기간) ──
+    def build_net_panels(prefix):
+        radios = []
+        labels = []
+        panels = []
+        for i, period in enumerate(PERIOD_LABELS):
+            rid = f"{prefix}{i}"
+            pid = f"{prefix}{i}v"
+            checked = " checked" if i == 0 else ""
+            radios.append(f'<input type="radio" name="{prefix}p" id="{rid}"{checked} class="sr">')
+            labels.append(f'<label for="{rid}" class="tab-btn">{period}</label>')
+            rows = net_data.get(period, [])
+            summary_html = ""
+            if rows:
+                top_name = rows[0]['name']
+                total = sum(r['buy_amount'] for r in rows)
+                kospi_t = sum(r['buy_amount'] for r in rows if r['market'] == 'KOSPI')
+                kosdaq_t = sum(r['buy_amount'] for r in rows if r['market'] == 'KOSDAQ')
+                tc = "green" if total >= 0 else "red"
+                kc = "green" if kospi_t >= 0 else "red"
+                dc = "green" if kosdaq_t >= 0 else "red"
+                summary_html = (
+                    '<div class="summary">'
+                    f'<div class="stat-card"><div class="label">1위 종목</div><div class="value accent">{top_name}</div></div>'
+                    f'<div class="stat-card"><div class="label">Top10 합계</div><div class="value {tc}">{fmt(total)}</div></div>'
+                    f'<div class="stat-card"><div class="label">KOSPI</div><div class="value {kc}">{fmt(kospi_t)}</div></div>'
+                    f'<div class="stat-card"><div class="label">KOSDAQ</div><div class="value {dc}">{fmt(kosdaq_t)}</div></div>'
+                    '</div>\n'
+                )
+            if rows:
+                trs = []
+                for j, r in enumerate(rows):
+                    p = price_data.get(r['code'], {})
+                    chg = p.get('change', 0)
+                    chg_s = '+' if chg >= 0 else ''
+                    trs.append(
+                        f'<tr><td>{j+1}</td>'
+                        f'<td>{r["name"]} <span class="sub">{r["code"]}</span></td>'
+                        f'<td>{mkt_badge(r["market"])}</td>'
+                        f'<td class="right">{fmt_price(p.get("price", 0))}'
+                        f'<br><span class="sub {val_cls(chg)}">{chg_s}{chg:.2f}%</span></td>'
+                        f'<td class="right {val_cls(r["buy_amount"])}">{fmt(r["buy_amount"])}</td>'
+                        f'<td class="right {val_cls(r["buy_volume"])}">{fmt_vol(r["buy_volume"])}</td></tr>'
+                    )
+                tbody_html = '\n'.join(trs)
+            else:
+                tbody_html = '<tr><td colspan="6" class="empty-msg">데이터 없음</td></tr>'
+            panels.append(
+                f'<div class="pp" id="{pid}">\n'
+                + summary_html
+                + '<div class="table-wrap"><table>\n'
+                + '<thead><tr><th>#</th><th>종목명</th><th>시장</th><th>종가</th>'
+                + '<th>순매수금액</th><th>순매수수량</th></tr></thead>\n'
+                + f'<tbody>\n{tbody_html}\n</tbody>\n'
+                + '</table></div>\n</div>\n'
+            )
+        return (
+            '\n'.join(radios) + '\n'
+            + '<div class="tabs">' + ''.join(labels) + '</div>\n'
+            + ''.join(panels)
+        )
+
+    # ── 지분율 패널 (7개 기간) ──
+    def build_own_panels(prefix):
+        radios = []
+        labels = []
+        panels = []
+        for i, period in enumerate(PERIOD_LABELS):
+            rid = f"{prefix}{i}"
+            pid = f"{prefix}{i}v"
+            checked = " checked" if i == 0 else ""
+            radios.append(f'<input type="radio" name="{prefix}p" id="{rid}"{checked} class="sr">')
+            labels.append(f'<label for="{rid}" class="tab-btn">{period}</label>')
+            rows = own_data.get(period, [])
+            summary_html = ""
+            if rows:
+                top_name = rows[0]['name']
+                max_chg = max(r['rate_change'] for r in rows)
+                avg_chg = sum(r['rate_change'] for r in rows) / len(rows)
+                summary_html = (
+                    '<div class="summary">'
+                    f'<div class="stat-card"><div class="label">1위 종목</div><div class="value accent">{top_name}</div></div>'
+                    f'<div class="stat-card"><div class="label">최대 증가</div><div class="value green">{fmt_pct(max_chg)}</div></div>'
+                    f'<div class="stat-card"><div class="label">평균 증가</div><div class="value green">{fmt_pct(avg_chg)}</div></div>'
+                    f'<div class="stat-card"><div class="label">종목 수</div><div class="value amber">{len(rows)}</div></div>'
+                    '</div>\n'
+                )
+            if rows:
+                trs = []
+                for j, r in enumerate(rows):
+                    p = price_data.get(r['code'], {})
+                    chg = p.get('change', 0)
+                    chg_s = '+' if chg >= 0 else ''
+                    trs.append(
+                        f'<tr><td>{j+1}</td>'
+                        f'<td>{r["name"]} <span class="sub">{r["code"]}</span></td>'
+                        f'<td>{mkt_badge(r["market"])}</td>'
+                        f'<td class="right">{fmt_price(p.get("price", 0))}'
+                        f'<br><span class="sub {val_cls(chg)}">{chg_s}{chg:.2f}%</span></td>'
+                        f'<td class="right">{fmt_rate(r["rate_end"])}</td>'
+                        f'<td class="right {val_cls(r["rate_change"])}">{fmt_pct(r["rate_change"])}</td>'
+                        f'<td class="right {val_cls(r["hold_change"])}">{fmt_vol(r["hold_change"])}</td></tr>'
+                    )
+                tbody_html = '\n'.join(trs)
+            else:
+                tbody_html = '<tr><td colspan="7" class="empty-msg">데이터 없음</td></tr>'
+            panels.append(
+                f'<div class="pp" id="{pid}">\n'
+                + summary_html
+                + '<div class="table-wrap"><table>\n'
+                + '<thead><tr><th>#</th><th>종목명</th><th>시장</th><th>종가</th>'
+                + '<th>현재 지분율</th><th>지분율 변동</th><th>보유수량 변동</th></tr></thead>\n'
+                + f'<tbody>\n{tbody_html}\n</tbody>\n'
+                + '</table></div>\n</div>\n'
+            )
+        return (
+            '\n'.join(radios) + '\n'
+            + '<div class="tabs">' + ''.join(labels) + '</div>\n'
+            + ''.join(panels)
+        )
+
+    # ── 조립 ──
+    net_content = build_net_panels('n')
+    own_content = build_own_panels('o')
+
+    # CSS: radio 기반 탭 전환 (JS 불필요)
+    # 패널 표시 규칙 생성
+    panel_rules = []
+    tab_active_rules = []
+    for prefix in ['n', 'o']:
+        for i in range(len(PERIOD_LABELS)):
+            panel_rules.append(f"#{prefix}{i}:checked~#{prefix}{i}v{{display:block}}")
+            tab_active_rules.append(f"#{prefix}{i}:checked~.tabs label[for={prefix}{i}]{{background:#252836;color:#e1e4ea}}")
+
+    # 메인 섹션 표시 규칙
+    main_rules = "#tab-net:checked~#sec-net{display:block}#tab-own:checked~#sec-own{display:block}"
+    main_label_rules = (
+        "#tab-net:checked~label[for=tab-net],"
+        "#tab-own:checked~label[for=tab-own]"
+        "{color:#818cf8;border-bottom-color:#818cf8}"
+    )
+
+    css = (
+        "*{margin:0;padding:0;box-sizing:border-box}"
+        "body{background:#0f1117;color:#e1e4ea;font-family:-apple-system,'Pretendard','Noto Sans KR',sans-serif;"
+        "line-height:1.5;padding:16px;max-width:1200px;margin:0 auto}"
+        "a{color:#818cf8;text-decoration:none}"
+        ".header{padding:24px 0 16px;border-bottom:1px solid #252836;margin-bottom:24px}"
+        ".header h1{font-size:24px;font-weight:800;color:#fff}"
+        ".header h1 span{color:#818cf8;font-weight:400;font-size:14px;margin-left:8px}"
+        ".header .meta{color:#8b8fa3;font-size:13px;margin-top:4px}"
+        # 숨겨진 radio
+        ".sr{position:absolute;opacity:0;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}"
+        # 메인 탭 (label)
+        ".main-tab{display:inline-block;padding:14px 24px;color:#8b8fa3;cursor:pointer;"
+        "font-size:15px;font-weight:600;border-bottom:2px solid transparent;margin-bottom:-2px}"
+        ".main-tab:hover{color:#e1e4ea}"
+        ".main-tab-line{border-bottom:2px solid #252836;margin-bottom:20px}"
+        # 메인 섹션 표시
+        ".section{display:none;margin-bottom:40px}"
+        + main_rules
+        + main_label_rules
+        # 기간 탭 (label)
+        + ".tabs{display:flex;gap:4px;background:#1a1d27;border-radius:12px;padding:4px;margin-bottom:16px;overflow-x:auto}"
+        ".tab-btn{display:block;padding:10px 14px;border-radius:10px;color:#8b8fa3;"
+        "cursor:pointer;font-size:13px;font-weight:500;white-space:nowrap}"
+        ".tab-btn:hover{color:#e1e4ea}"
+        # 패널 기본 숨김 + 체크 시 표시
+        ".pp{display:none}"
+        + ''.join(panel_rules)
+        + ''.join(tab_active_rules)
+        # 요약 카드
+        + ".summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:16px}"
+        ".stat-card{background:#1a1d27;border:1px solid #252836;border-radius:10px;padding:14px}"
+        ".stat-card .label{font-size:11px;color:#636678;text-transform:uppercase;letter-spacing:.5px}"
+        ".stat-card .value{font-size:18px;font-weight:700;margin-top:4px}"
+        ".stat-card .value.green{color:#34d399}"
+        ".stat-card .value.red{color:#f87171}"
+        ".stat-card .value.accent{color:#818cf8}"
+        ".stat-card .value.amber{color:#fbbf24}"
+        # 테이블
+        ".table-wrap{overflow-x:auto;border-radius:10px;border:1px solid #252836}"
+        "table{width:100%;border-collapse:collapse;font-size:13px}"
+        "thead th{background:#1a1d27;padding:10px 12px;text-align:left;font-weight:600;"
+        "color:#8b8fa3;position:sticky;top:0;white-space:nowrap}"
+        "tbody tr{border-top:1px solid #252836;transition:background .1s}"
+        "tbody tr:hover{background:#1a1d27}"
+        "tbody tr:nth-child(even){background:#14161e}"
+        "td{padding:10px 12px;white-space:nowrap}"
+        "td.right{text-align:right;font-variant-numeric:tabular-nums}"
+        "td .sub{font-size:11px;color:#636678}"
+        ".positive{color:#34d399}.negative{color:#f87171}"
+        ".badge{display:inline-block;font-size:11px;padding:2px 8px;border-radius:6px}"
+        ".badge-kospi{background:rgba(79,70,229,.15);color:#a5b4fc}"
+        ".badge-kosdaq{background:rgba(251,191,36,.12);color:#fbbf24}"
+        ".empty-msg{text-align:center;color:#636678;padding:40px}"
+        # 반응형
+        "@media(max-width:768px){"
+        "body{padding:8px}.header h1{font-size:20px}"
+        ".main-tab{padding:12px 16px;font-size:14px}"
+        ".tab-btn{padding:8px 10px;font-size:12px}"
+        ".summary{grid-template-columns:repeat(2,1fr)}"
+        "td,th{padding:8px 6px;font-size:12px}}"
+    )
+
+    html = (
+        '<!DOCTYPE html>\n<html lang="ko">\n<head>\n'
+        '<meta charset="UTF-8">\n'
+        '<meta name="viewport" content="width=device-width, initial-scale=1.0">\n'
+        '<title>UTONG - 외국인 수급 추적</title>\n'
+        '<style>\n' + css + '\n</style>\n'
+        '</head>\n<body>\n\n'
+        '<div class="header">\n'
+        '  <h1>UTONG <span>외국인 수급 추적 대시보드</span></h1>\n'
+        f'  <div class="meta">기준일: {date_display} | KOSPI + KOSDAQ | Data: Naver Finance</div>\n'
+        '</div>\n\n'
+        # 메인 탭: radio + label (JS 불필요)
+        '<input type="radio" name="main" id="tab-net" checked class="sr">\n'
+        '<input type="radio" name="main" id="tab-own" class="sr">\n'
+        '<label for="tab-net" class="main-tab">순매수 금액 TOP 10</label>'
+        '<label for="tab-own" class="main-tab">지분율 증가 TOP 10</label>\n'
+        '<div class="main-tab-line"></div>\n\n'
+        # 섹션 1: 순매수
+        '<div class="section" id="sec-net">\n'
+        + net_content
+        + '</div>\n\n'
+        # 섹션 2: 지분율
+        '<div class="section" id="sec-own">\n'
+        + own_content
+        + '</div>\n\n'
+        '<div style="text-align:center;padding:24px 0;color:#636678;font-size:12px">\n'
+        '  Generated by UTONG | Data source: Naver Finance\n'
+        '</div>\n\n'
+        '</body>\n</html>'
+    )
+    return html
+
+
+# ──────────────────────────────────────────────
+# 메인
+# ──────────────────────────────────────────────
+def main():
+    log("UTONG 데이터 수집 시작")
+    start_time = time.time()
+
+    # 1. 외국인 순매수 랭킹 (당일/전일)
+    rankings, dates = fetch_rankings()
+    today_str = dates.get("당일") or dates.get("전일")
+    if not today_str:
+        log("랭킹 데이터를 가져올 수 없습니다. 종료.")
+        sys.exit(1)
+    log(f"기준일: 당일={dates.get('당일')} 전일={dates.get('전일')}")
+
+    # 2. 유니크 종목 목록 수집
+    stock_meta = {}
+    for period_key in rankings:
+        for s in rankings[period_key]:
+            if s["code"] not in stock_meta:
+                stock_meta[s["code"]] = {"name": s["name"], "market": s["market"]}
+    log(f"랭킹 종목 수: {len(stock_meta)}개")
+
+    # 3. 개별 종목 일별 이력 수집
+    log("일별 외국인 매매 이력 수집 시작...")
+    histories = fetch_all_histories(stock_meta)
+    log(f"이력 수집 완료: {len(histories)}개 종목")
+
+    # 4. 기간별 순매수/지분율 계산
+    log("기간별 데이터 계산 중...")
+    net_data, own_data = calculate_periods(histories, rankings, dates)
+
+    # 5. 현재가 보충
+    all_codes = set()
+    for rows in net_data.values():
+        for r in rows:
+            all_codes.add(r["code"])
+    for rows in own_data.values():
+        for r in rows:
+            all_codes.add(r["code"])
+    price_data = fetch_prices(all_codes)
+
+    # 6. HTML 생성
+    log("HTML 생성 중...")
+    html = generate_html(today_str, net_data, own_data, price_data)
+    OUTPUT.write_text(html, encoding="utf-8")
+
+    elapsed = time.time() - start_time
+    log(f"완료! {OUTPUT} ({elapsed:.1f}초)")
+
+
+if __name__ == "__main__":
+    main()
