@@ -7,142 +7,32 @@
 - 지분율: 개별 종목 일별 보유율 변동에서 계산
 """
 
-import json
 import re
 import time
 import sys
 from datetime import datetime
 from pathlib import Path
 
-import requests
 from bs4 import BeautifulSoup
+
+from scraper import (
+    log, naver_get, parse_int, parse_float,
+    fetch_rankings, fetch_prices,
+)
 
 # ──────────────────────────────────────────────
 # 설정
 # ──────────────────────────────────────────────
-SLEEP = 0.2
 TOP_N = 10
 HISTORY_PAGES = 4  # 페이지당 ~20영업일, 4페이지 ≈ 3개월
 OUTPUT_DIR = Path(__file__).parent / "public"
 OUTPUT_DIR.mkdir(exist_ok=True)
 OUTPUT = OUTPUT_DIR / "index.html"
 
-UA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
-HEADERS = {"User-Agent": UA}
+DONATE_URL = "https://qr.kakaopay.com/Ej759Ivs1"
 
 PERIOD_LABELS = ["당일", "전일", "최근 3일", "최근 1주일", "최근 2주일", "최근 1개월", "최근 3개월"]
 PERIOD_DAYS = [1, 1, 3, 5, 10, 21, 63]  # 영업일 기준 슬라이싱 수
-
-
-# ──────────────────────────────────────────────
-# 유틸리티
-# ──────────────────────────────────────────────
-def log(msg):
-    print(f"[{datetime.now().strftime('%H:%M:%S')}] {msg}", flush=True)
-
-
-def naver_get(url, retries=1):
-    for attempt in range(retries + 1):
-        try:
-            time.sleep(SLEEP)
-            resp = requests.get(url, headers=HEADERS, timeout=15)
-            if resp.status_code == 200:
-                return resp
-        except Exception as e:
-            if attempt == retries:
-                log(f"  요청 실패: {url[:80]} → {e}")
-    return None
-
-
-def parse_int(s):
-    s = s.strip().replace(",", "")
-    if not s or s == "-":
-        return 0
-    s = re.sub(r"[^0-9\-+]", "", s)
-    try:
-        return int(s)
-    except ValueError:
-        return 0
-
-
-def parse_float(s):
-    s = s.strip().replace(",", "").replace("%", "").replace("%p", "")
-    try:
-        return float(s)
-    except ValueError:
-        return 0.0
-
-
-# ──────────────────────────────────────────────
-# 1. 외국인 순매수 랭킹 (당일/전일)
-# ──────────────────────────────────────────────
-def fetch_rankings():
-    """네이버 외국인 순매수 Top 20 (당일/전일, KOSPI+KOSDAQ)."""
-    rankings = {"당일": [], "전일": []}
-    dates = {"당일": None, "전일": None}
-
-    for sosok, market in [("01", "KOSPI"), ("02", "KOSDAQ")]:
-        url = f"https://finance.naver.com/sise/sise_deal_rank_iframe.naver?sosok={sosok}&investor_gubun=9000&type=buy"
-        log(f"랭킹 수집: {market}")
-        resp = naver_get(url)
-        if resp is None:
-            continue
-
-        soup = BeautifulSoup(resp.content, "html.parser", from_encoding="euc-kr")
-        tables = soup.find_all("table", class_="type_1")
-
-        # 테이블 0/1 = 전일, 테이블 2/3 = 당일
-        period_table_map = []
-        for i, t in enumerate(tables):
-            prev = t.find_previous_sibling()
-            if prev:
-                dt = prev.get_text(strip=True)
-                if re.match(r"\d{2}\.\d{2}\.\d{2}", dt):
-                    date_str = "20" + dt.replace(".", "")
-                    period_table_map.append((i, date_str, t))
-
-        # 날짜순 정렬 → 앞=전일, 뒤=당일
-        period_table_map.sort(key=lambda x: x[1])
-        if len(period_table_map) >= 2:
-            for (_, ds, t), period_key in zip(period_table_map, ["전일", "당일"]):
-                if dates[period_key] is None:
-                    dates[period_key] = ds
-                rows = _parse_ranking_table(t, market)
-                rankings[period_key].extend(rows)
-        elif len(period_table_map) == 1:
-            _, ds, t = period_table_map[0]
-            dates["당일"] = ds
-            rankings["당일"].extend(_parse_ranking_table(t, market))
-
-    # 금액 내림차순 정렬
-    for k in rankings:
-        rankings[k].sort(key=lambda x: x["buy_amount"], reverse=True)
-
-    return rankings, dates
-
-
-def _parse_ranking_table(table, market):
-    rows = []
-    for tr in table.find_all("tr"):
-        a = tr.find("a", href=re.compile(r"code="))
-        if not a:
-            continue
-        code = re.search(r"code=(\w+)", a["href"]).group(1)
-        name = a.get_text(strip=True)
-        cells = [td.get_text(strip=True) for td in tr.find_all("td")]
-        if len(cells) < 4:
-            continue
-        # cells: [종목명, 수량(천주), 금액(백만원), 당일거래량]
-        volume_1k = parse_int(cells[1])
-        amount_mil = parse_int(cells[2])
-        rows.append({
-            "code": code,
-            "name": name,
-            "market": market,
-            "buy_amount": amount_mil * 1_000_000,  # 원
-            "buy_volume": volume_1k * 1000,  # 주
-        })
-    return rows
 
 
 # ──────────────────────────────────────────────
@@ -310,35 +200,83 @@ def calculate_periods(histories, ranking_data, dates):
 
 
 # ──────────────────────────────────────────────
-# 4. 현재가 보충 (Naver Polling API)
-# ──────────────────────────────────────────────
-def fetch_prices(codes):
-    """네이버 실시간 API에서 현재가를 조회한다."""
-    log(f"현재가 조회: {len(codes)}개 종목")
-    price_map = {}
-    for code in codes:
-        url = f"https://polling.finance.naver.com/api/realtime/domestic/stock/{code}"
-        resp = naver_get(url)
-        if resp is None:
-            continue
-        try:
-            data = resp.json()
-            item = data["datas"][0]
-            price_map[code] = {
-                "price": parse_int(item.get("closePrice", "0")),
-                "change": parse_float(item.get("fluctuationsRatio", "0")),
-                "volume": parse_int(item.get("accumulatedTradingVolume", "0")),
-            }
-        except (KeyError, IndexError, ValueError):
-            continue
-    return price_map
-
-
-# ──────────────────────────────────────────────
 # 5. HTML 생성
 # ──────────────────────────────────────────────
+LIVE_UPDATE_JS = r'''<script>
+(function(){
+function isMarketHours(){
+var now=new Date(),utc=now.getTime()+now.getTimezoneOffset()*60000;
+var kst=new Date(utc+9*3600000),day=kst.getDay();
+if(day===0||day===6)return false;
+var t=kst.getHours()*60+kst.getMinutes();
+return t>=540&&t<=930;
+}
+function fmtAmt(v){
+var a=v/1e8,ab=Math.abs(a);
+var s=ab>=1000?ab.toLocaleString('ko-KR',{maximumFractionDigits:0}):ab.toLocaleString('ko-KR',{minimumFractionDigits:1,maximumFractionDigits:1});
+return (a>=0?'+':'-')+s+'\uc5b5';
+}
+function fmtVol(v){
+var ab=Math.abs(v),sign=v>=0?'+':'';
+if(ab>=1e6)return sign+(v/1e6).toFixed(1)+'M';
+if(ab>=1e3)return sign+Math.round(v/1e3)+'K';
+return sign+v.toLocaleString('ko-KR');
+}
+function fmtPrice(v){return v?v.toLocaleString('ko-KR')+'\uc6d0':'-';}
+function valCls(v){return v>0?'positive':(v<0?'negative':'');}
+function mktBadge(m){return '<span class="badge badge-'+m.toLowerCase()+'">'+m+'</span>';}
+function updateRankings(){
+if(!isMarketHours())return;
+fetch('/api/rankings').then(function(r){return r.json();}).then(function(data){
+if(!data.rankings||!data.rankings.length)return;
+var panel=document.getElementById('n0v');
+if(!panel)return;
+var rows=data.rankings.slice(0,10),all=data.rankings;
+var totalAmt=0,kospiAmt=0,kosdaqAmt=0;
+for(var i=0;i<all.length;i++){
+totalAmt+=all[i].buy_amount;
+if(all[i].market==='KOSPI')kospiAmt+=all[i].buy_amount;
+else kosdaqAmt+=all[i].buy_amount;
+}
+var tc=totalAmt>=0?'green':'red',kc=kospiAmt>=0?'green':'red',dc=kosdaqAmt>=0?'green':'red';
+var html='<div class="summary">'
++'<div class="stat-card"><div class="label">1\uc704 \uc885\ubaa9</div><div class="value accent">'+all[0].name+'</div></div>'
++'<div class="stat-card"><div class="label">\uc804\uccb4 \ud569\uacc4</div><div class="value '+tc+'">'+fmtAmt(totalAmt)+'</div></div>'
++'<div class="stat-card"><div class="label">KOSPI</div><div class="value '+kc+'">'+fmtAmt(kospiAmt)+'</div></div>'
++'<div class="stat-card"><div class="label">KOSDAQ</div><div class="value '+dc+'">'+fmtAmt(kosdaqAmt)+'</div></div>'
++'</div>';
+html+='<div class="table-wrap"><table>'
++'<thead><tr><th>#</th><th>\uc885\ubaa9\uba85</th><th>\uc2dc\uc7a5</th><th>\uc885\uac00</th><th>\uc21c\ub9e4\uc218\uae08\uc561</th><th>\uc21c\ub9e4\uc218\uc218\ub7c9</th></tr></thead><tbody>';
+for(var j=0;j<rows.length;j++){
+var r=rows[j],cs=r.change>=0?'+':'';
+html+='<tr><td>'+(j+1)+'</td>'
++'<td>'+r.name+' <span class="sub">'+r.code+'</span></td>'
++'<td>'+mktBadge(r.market)+'</td>'
++'<td class="right">'+fmtPrice(r.price)+'<br><span class="sub '+valCls(r.change)+'">'+cs+r.change.toFixed(2)+'%</span></td>'
++'<td class="right '+valCls(r.buy_amount)+'">'+fmtAmt(r.buy_amount)+'</td>'
++'<td class="right '+valCls(r.buy_volume)+'">'+fmtVol(r.buy_volume)+'</td></tr>';
+}
+html+='</tbody></table></div>';
+panel.innerHTML=html;
+var meta=document.querySelector('.meta');
+if(meta){
+var ts=data.timestamp||'';
+var timeStr=ts.length>=16?ts.substring(11,16):new Date().toTimeString().substring(0,5);
+var base=meta.textContent.replace(/\s*\|\s*\uc2e4\uc2dc\uac04.*$/,'');
+meta.innerHTML=base+' | <span class="live-indicator">\uc2e4\uc2dc\uac04 ('+timeStr+' \uac31\uc2e0)</span>';
+}
+}).catch(function(e){console.log('UTONG live update error:',e);});
+}
+if(isMarketHours()){
+updateRankings();
+setInterval(updateRankings,600000);
+}
+})();
+</script>'''
+
+
 def generate_html(today_str, net_data, own_data, price_data):
-    """자체 완결형 HTML 파일 생성. 테이블은 Python에서 미리 렌더링 (JS 불필요)."""
+    """자체 완결형 HTML 파일 생성. 테이블은 Python에서 미리 렌더링."""
     if today_str:
         date_display = f"{today_str[:4]}.{today_str[4:6]}.{today_str[6:]}"
     else:
@@ -499,8 +437,7 @@ def generate_html(today_str, net_data, own_data, price_data):
     net_content = build_net_panels('n')
     own_content = build_own_panels('o')
 
-    # CSS: radio 기반 탭 전환 (JS 불필요)
-    # 패널 표시 규칙 생성
+    # CSS: radio 기반 탭 전환
     panel_rules = []
     tab_active_rules = []
     for prefix in ['n', 'o']:
@@ -508,7 +445,6 @@ def generate_html(today_str, net_data, own_data, price_data):
             panel_rules.append(f"#{prefix}{i}:checked~#{prefix}{i}v{{display:block}}")
             tab_active_rules.append(f"#{prefix}{i}:checked~.tabs label[for={prefix}{i}]{{background:#252836;color:#e1e4ea}}")
 
-    # 메인 섹션 표시 규칙
     main_rules = "#tab-net:checked~#sec-net{display:block}#tab-own:checked~#sec-own{display:block}"
     main_label_rules = (
         "#tab-net:checked~label[for=tab-net],"
@@ -521,10 +457,23 @@ def generate_html(today_str, net_data, own_data, price_data):
         "body{background:#0f1117;color:#e1e4ea;font-family:-apple-system,'Pretendard','Noto Sans KR',sans-serif;"
         "line-height:1.5;padding:16px;max-width:1200px;margin:0 auto}"
         "a{color:#818cf8;text-decoration:none}"
-        ".header{padding:24px 0 16px;border-bottom:1px solid #252836;margin-bottom:24px}"
+        # header (flex layout)
+        ".header{padding:24px 0 16px;border-bottom:1px solid #252836;margin-bottom:24px;"
+        "display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px}"
+        ".header-left{flex:1;min-width:0}"
         ".header h1{font-size:24px;font-weight:800;color:#fff}"
         ".header h1 span{color:#818cf8;font-weight:400;font-size:14px;margin-left:8px}"
         ".header .meta{color:#8b8fa3;font-size:13px;margin-top:4px}"
+        # donate button
+        ".donate-btn{display:inline-flex;align-items:center;gap:6px;padding:10px 18px;"
+        "background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff;border-radius:10px;"
+        "font-size:13px;font-weight:600;text-decoration:none;white-space:nowrap;"
+        "transition:transform .15s,box-shadow .15s;flex-shrink:0}"
+        ".donate-btn:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(245,158,11,.3)}"
+        # live indicator
+        ".live-indicator{color:#34d399;font-weight:600}"
+        ".live-indicator::before{content:'\\25CF ';animation:blink 2s infinite}"
+        "@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}"
         # 숨겨진 radio
         ".sr{position:absolute;opacity:0;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}"
         # 메인 탭 (label)
@@ -576,6 +525,7 @@ def generate_html(today_str, net_data, own_data, price_data):
         ".main-tab{padding:12px 16px;font-size:14px}"
         ".tab-btn{padding:8px 10px;font-size:12px}"
         ".summary{grid-template-columns:repeat(2,1fr)}"
+        ".donate-btn{padding:8px 14px;font-size:12px}"
         "td,th{padding:8px 6px;font-size:12px}}"
     )
 
@@ -586,11 +536,17 @@ def generate_html(today_str, net_data, own_data, price_data):
         '<title>UTONG - 외국인 수급 추적</title>\n'
         '<style>\n' + css + '\n</style>\n'
         '</head>\n<body>\n\n'
+        # header with donate button
         '<div class="header">\n'
-        '  <h1>UTONG <span>외국인 수급 추적 대시보드</span></h1>\n'
-        f'  <div class="meta">기준일: {date_display} | KOSPI + KOSDAQ | Data: Naver Finance</div>\n'
+        '  <div class="header-left">\n'
+        '    <h1>UTONG <span>외국인 수급 추적 대시보드</span></h1>\n'
+        f'    <div class="meta">기준일: {date_display} | KOSPI + KOSDAQ | Data: Naver Finance</div>\n'
+        '  </div>\n'
+        f'  <a href="{DONATE_URL}" target="_blank" rel="noopener" class="donate-btn">\n'
+        '    ☕ 커피 한 잔 후원하기\n'
+        '  </a>\n'
         '</div>\n\n'
-        # 메인 탭: radio + label (JS 불필요)
+        # 메인 탭: radio + label
         '<input type="radio" name="main" id="tab-net" checked class="sr">\n'
         '<input type="radio" name="main" id="tab-own" class="sr">\n'
         '<label for="tab-net" class="main-tab">순매수 금액 TOP 10</label>'
@@ -607,6 +563,7 @@ def generate_html(today_str, net_data, own_data, price_data):
         '<div style="text-align:center;padding:24px 0;color:#636678;font-size:12px">\n'
         '  Generated by UTONG | Data source: Naver Finance\n'
         '</div>\n\n'
+        + LIVE_UPDATE_JS + '\n\n'
         '</body>\n</html>'
     )
     return html

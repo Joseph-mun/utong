@@ -2,3 +2,4 @@ __pycache__/
 *.pyc
 .vercel/
 utong_report.html
+.vercel
