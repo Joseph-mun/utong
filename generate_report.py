@@ -540,7 +540,7 @@ def generate_html(today_str, net_data, own_data, price_data):
         '<div class="header">\n'
         '  <div class="header-left">\n'
         '    <h1>UTONG <span>외국인 수급 추적 대시보드</span></h1>\n'
-        f'    <div class="meta">기준일: {date_display} | 반영: {datetime.now().strftime("%Y.%m.%d %H:%M")} | KOSPI + KOSDAQ | Data: Naver Finance</div>\n'
+        f'    <div class="meta">기준일: {date_display} | KOSPI + KOSDAQ | 최종 업데이트: {datetime.now().strftime("%H:%M")} | Data: Naver Finance</div>\n'
         '  </div>\n'
         f'  <a href="{DONATE_URL}" target="_blank" rel="noopener" class="donate-btn">\n'
         '    ☕ 커피 한 잔 후원하기\n'
