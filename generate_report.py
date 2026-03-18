@@ -10,7 +10,9 @@
 import re
 import time
 import sys
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
+
+KST = timezone(timedelta(hours=9))
 from pathlib import Path
 
 from bs4 import BeautifulSoup
@@ -280,7 +282,7 @@ def generate_html(today_str, net_data, own_data, price_data):
     if today_str:
         date_display = f"{today_str[:4]}.{today_str[4:6]}.{today_str[6:]}"
     else:
-        date_display = datetime.now().strftime("%Y.%m.%d")
+        date_display = datetime.now(KST).strftime("%Y.%m.%d")
 
     # ── 포매팅 헬퍼 ──
     def fmt(v):
@@ -540,7 +542,7 @@ def generate_html(today_str, net_data, own_data, price_data):
         '<div class="header">\n'
         '  <div class="header-left">\n'
         '    <h1>UTONG <span>외국인 수급 추적 대시보드</span></h1>\n'
-        f'    <div class="meta">기준일: {date_display} {datetime.now().strftime("%H:%M")} | KOSPI + KOSDAQ | Data: Naver Finance</div>\n'
+        f'    <div class="meta">기준일: {date_display} {datetime.now(KST).strftime("%H:%M")} | KOSPI + KOSDAQ | Data: Naver Finance</div>\n'
         '  </div>\n'
         f'  <a href="{DONATE_URL}" target="_blank" rel="noopener" class="donate-btn">\n'
         '    ☕ 커피 한 잔 후원하기\n'
