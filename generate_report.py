@@ -206,13 +206,6 @@ def calculate_periods(histories, ranking_data, dates):
 # ──────────────────────────────────────────────
 LIVE_UPDATE_JS = r'''<script>
 (function(){
-function isMarketHours(){
-var now=new Date(),utc=now.getTime()+now.getTimezoneOffset()*60000;
-var kst=new Date(utc+9*3600000),day=kst.getDay();
-if(day===0||day===6)return false;
-var t=kst.getHours()*60+kst.getMinutes();
-return t>=540&&t<=930;
-}
 function fmtAmt(v){
 var a=v/1e8,ab=Math.abs(a);
 var s=ab>=1000?ab.toLocaleString('ko-KR',{maximumFractionDigits:0}):ab.toLocaleString('ko-KR',{minimumFractionDigits:1,maximumFractionDigits:1});
@@ -227,12 +220,13 @@ return sign+v.toLocaleString('ko-KR');
 function fmtPrice(v){return v?v.toLocaleString('ko-KR')+'\uc6d0':'-';}
 function valCls(v){return v>0?'positive':(v<0?'negative':'');}
 function mktBadge(m){return '<span class="badge badge-'+m.toLowerCase()+'">'+m+'</span>';}
+var btn=document.getElementById('refresh-btn');
 function updateRankings(){
-if(!isMarketHours())return;
+if(btn){btn.disabled=true;btn.textContent='\uac31\uc2e0 \uc911...';}
 fetch('/api/rankings').then(function(r){return r.json();}).then(function(data){
-if(!data.rankings||!data.rankings.length)return;
+if(!data.rankings||!data.rankings.length){if(btn){btn.disabled=false;btn.textContent='\u21bb \uc0c8\ub85c\uace0\uce68';}return;}
 var panel=document.getElementById('n0v');
-if(!panel)return;
+if(!panel){if(btn){btn.disabled=false;btn.textContent='\u21bb \uc0c8\ub85c\uace0\uce68';}return;}
 var rows=data.rankings.slice(0,10),all=data.rankings;
 var totalAmt=0,kospiAmt=0,kosdaqAmt=0;
 for(var i=0;i<all.length;i++){
@@ -268,12 +262,10 @@ var dateStr=ts.length>=10?ts.substring(0,4)+'.'+ts.substring(5,7)+'.'+ts.substri
 if(dateStr){meta.innerHTML='\uae30\uc900\uc77c: '+dateStr+' '+timeStr+' | KOSPI + KOSDAQ | Data: Naver Finance | <span class="live-indicator">\uc2e4\uc2dc\uac04</span>';}
 else{var base=meta.textContent.replace(/\s*\|\s*\uc2e4\uc2dc\uac04.*$/,'');meta.innerHTML=base+' | <span class="live-indicator">\uc2e4\uc2dc\uac04 ('+timeStr+' \uac31\uc2e0)</span>';}
 }
-}).catch(function(e){console.log('UTONG live update error:',e);});
+if(btn){btn.disabled=false;btn.textContent='\u21bb \uc0c8\ub85c\uace0\uce68';}
+}).catch(function(e){console.log('UTONG live update error:',e);if(btn){btn.disabled=false;btn.textContent='\u21bb \uc0c8\ub85c\uace0\uce68';}});
 }
-if(isMarketHours()){
-updateRankings();
-setInterval(updateRankings,600000);
-}
+if(btn){btn.addEventListener('click',updateRankings);}
 })();
 </script>'''
 
@@ -476,6 +468,10 @@ def generate_html(today_str, net_data, own_data, price_data):
         # live indicator
         ".live-indicator{color:#34d399;font-weight:600}"
         ".live-indicator::before{content:'\\25CF ';animation:blink 2s infinite}"
+        ".refresh-btn{background:#252836;color:#8b8fa3;border:1px solid #363a4e;border-radius:6px;"
+        "padding:4px 12px;font-size:12px;cursor:pointer;transition:all .15s;margin-left:8px;vertical-align:middle}"
+        ".refresh-btn:hover{background:#363a4e;color:#e1e4ea}"
+        ".refresh-btn:disabled{opacity:.5;cursor:not-allowed}"
         "@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}"
         # 숨겨진 radio
         ".sr{position:absolute;opacity:0;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}"
@@ -543,7 +539,8 @@ def generate_html(today_str, net_data, own_data, price_data):
         '<div class="header">\n'
         '  <div class="header-left">\n'
         '    <h1>UTONG <span>외국인 수급 추적 대시보드</span></h1>\n'
-        f'    <div class="meta">기준일: {date_display} {datetime.now(KST).strftime("%H:%M")} | KOSPI + KOSDAQ | Data: Naver Finance</div>\n'
+        f'    <div class="meta">기준일: {date_display} {datetime.now(KST).strftime("%H:%M")} | KOSPI + KOSDAQ | Data: Naver Finance'
+        f' <button class="refresh-btn" id="refresh-btn">↻ 새로고침</button></div>\n'
         '  </div>\n'
         f'  <a href="{DONATE_URL}" target="_blank" rel="noopener" class="donate-btn">\n'
         '    ☕ 커피 한 잔 후원하기\n'
