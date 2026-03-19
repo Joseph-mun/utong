@@ -264,8 +264,9 @@ var meta=document.querySelector('.meta');
 if(meta){
 var ts=data.timestamp||'';
 var timeStr=ts.length>=16?ts.substring(11,16):new Date().toTimeString().substring(0,5);
-var base=meta.textContent.replace(/\s*\|\s*\uc2e4\uc2dc\uac04.*$/,'');
-meta.innerHTML=base+' | <span class="live-indicator">\uc2e4\uc2dc\uac04 ('+timeStr+' \uac31\uc2e0)</span>';
+var dateStr=ts.length>=10?ts.substring(0,4)+'.'+ts.substring(5,7)+'.'+ts.substring(8,10):'';
+if(dateStr){meta.innerHTML='\uae30\uc900\uc77c: '+dateStr+' '+timeStr+' | KOSPI + KOSDAQ | Data: Naver Finance | <span class="live-indicator">\uc2e4\uc2dc\uac04</span>';}
+else{var base=meta.textContent.replace(/\s*\|\s*\uc2e4\uc2dc\uac04.*$/,'');meta.innerHTML=base+' | <span class="live-indicator">\uc2e4\uc2dc\uac04 ('+timeStr+' \uac31\uc2e0)</span>';}
 }
 }).catch(function(e){console.log('UTONG live update error:',e);});
 }
