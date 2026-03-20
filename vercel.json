@@ -1,10 +1,11 @@
 {
   "builds": [
-    { "src": "api/rankings.py", "use": "@vercel/python" },
+    { "src": "api/*.py", "use": "@vercel/python" },
     { "src": "public/**", "use": "@vercel/static" }
   ],
   "routes": [
-    { "src": "/api/(.*)", "dest": "/api/rankings.py" },
+    { "src": "/api/macro", "dest": "/api/macro.py" },
+    { "src": "/api/rankings", "dest": "/api/rankings.py" },
     { "src": "/(.*)", "dest": "/public/$1" }
   ]
 }

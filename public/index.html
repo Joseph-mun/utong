@@ -3,368 +3,686 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>UTONG - 외국인 수급 추적</title>
+<title>UTONG - 시장 대시보드</title>
 <style>
-*{margin:0;padding:0;box-sizing:border-box}body{background:#0f1117;color:#e1e4ea;font-family:-apple-system,'Pretendard','Noto Sans KR',sans-serif;line-height:1.5;padding:16px;max-width:1200px;margin:0 auto}a{color:#818cf8;text-decoration:none}.header{padding:24px 0 16px;border-bottom:1px solid #252836;margin-bottom:24px;display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px}.header-left{flex:1;min-width:0}.header h1{font-size:24px;font-weight:800;color:#fff}.header h1 span{color:#818cf8;font-weight:400;font-size:14px;margin-left:8px}.header .meta{color:#8b8fa3;font-size:13px;margin-top:4px}.donate-btn{display:inline-flex;align-items:center;gap:6px;padding:10px 18px;background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff;border-radius:10px;font-size:13px;font-weight:600;text-decoration:none;white-space:nowrap;transition:transform .15s,box-shadow .15s;flex-shrink:0}.donate-btn:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(245,158,11,.3)}.live-indicator{color:#34d399;font-weight:600}.live-indicator::before{content:'\25CF ';animation:blink 2s infinite}.refresh-btn{background:#252836;color:#8b8fa3;border:1px solid #363a4e;border-radius:6px;padding:4px 12px;font-size:12px;cursor:pointer;transition:all .15s;margin-left:8px;vertical-align:middle}.refresh-btn:hover{background:#363a4e;color:#e1e4ea}.refresh-btn:disabled{opacity:.5;cursor:not-allowed}@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}.sr{position:absolute;opacity:0;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}.main-tab{display:inline-block;padding:14px 24px;color:#8b8fa3;cursor:pointer;font-size:15px;font-weight:600;border-bottom:2px solid transparent;margin-bottom:-2px}.main-tab:hover{color:#e1e4ea}.main-tab-line{border-bottom:2px solid #252836;margin-bottom:20px}.section{display:none;margin-bottom:40px}#tab-net:checked~#sec-net{display:block}#tab-own:checked~#sec-own{display:block}#tab-net:checked~label[for=tab-net],#tab-own:checked~label[for=tab-own]{color:#818cf8;border-bottom-color:#818cf8}.tabs{display:flex;gap:4px;background:#1a1d27;border-radius:12px;padding:4px;margin-bottom:16px;overflow-x:auto}.tab-btn{display:block;padding:10px 14px;border-radius:10px;color:#8b8fa3;cursor:pointer;font-size:13px;font-weight:500;white-space:nowrap}.tab-btn:hover{color:#e1e4ea}.pp{display:none}#n0:checked~#n0v{display:block}#n1:checked~#n1v{display:block}#n2:checked~#n2v{display:block}#n3:checked~#n3v{display:block}#n4:checked~#n4v{display:block}#n5:checked~#n5v{display:block}#n6:checked~#n6v{display:block}#o0:checked~#o0v{display:block}#o1:checked~#o1v{display:block}#o2:checked~#o2v{display:block}#o3:checked~#o3v{display:block}#o4:checked~#o4v{display:block}#o5:checked~#o5v{display:block}#o6:checked~#o6v{display:block}#n0:checked~.tabs label[for=n0]{background:#252836;color:#e1e4ea}#n1:checked~.tabs label[for=n1]{background:#252836;color:#e1e4ea}#n2:checked~.tabs label[for=n2]{background:#252836;color:#e1e4ea}#n3:checked~.tabs label[for=n3]{background:#252836;color:#e1e4ea}#n4:checked~.tabs label[for=n4]{background:#252836;color:#e1e4ea}#n5:checked~.tabs label[for=n5]{background:#252836;color:#e1e4ea}#n6:checked~.tabs label[for=n6]{background:#252836;color:#e1e4ea}#o0:checked~.tabs label[for=o0]{background:#252836;color:#e1e4ea}#o1:checked~.tabs label[for=o1]{background:#252836;color:#e1e4ea}#o2:checked~.tabs label[for=o2]{background:#252836;color:#e1e4ea}#o3:checked~.tabs label[for=o3]{background:#252836;color:#e1e4ea}#o4:checked~.tabs label[for=o4]{background:#252836;color:#e1e4ea}#o5:checked~.tabs label[for=o5]{background:#252836;color:#e1e4ea}#o6:checked~.tabs label[for=o6]{background:#252836;color:#e1e4ea}.summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:16px}.stat-card{background:#1a1d27;border:1px solid #252836;border-radius:10px;padding:14px}.stat-card .label{font-size:11px;color:#636678;text-transform:uppercase;letter-spacing:.5px}.stat-card .value{font-size:18px;font-weight:700;margin-top:4px}.stat-card .value.green{color:#34d399}.stat-card .value.red{color:#f87171}.stat-card .value.accent{color:#818cf8}.stat-card .value.amber{color:#fbbf24}.table-wrap{overflow-x:auto;border-radius:10px;border:1px solid #252836}table{width:100%;border-collapse:collapse;font-size:13px}thead th{background:#1a1d27;padding:10px 12px;text-align:left;font-weight:600;color:#8b8fa3;position:sticky;top:0;white-space:nowrap}tbody tr{border-top:1px solid #252836;transition:background .1s}tbody tr:hover{background:#1a1d27}tbody tr:nth-child(even){background:#14161e}td{padding:10px 12px;white-space:nowrap}td.right{text-align:right;font-variant-numeric:tabular-nums}td .sub{font-size:11px;color:#636678}.positive{color:#34d399}.negative{color:#f87171}.badge{display:inline-block;font-size:11px;padding:2px 8px;border-radius:6px}.badge-kospi{background:rgba(79,70,229,.15);color:#a5b4fc}.badge-kosdaq{background:rgba(251,191,36,.12);color:#fbbf24}.empty-msg{text-align:center;color:#636678;padding:40px}@media(max-width:768px){body{padding:8px}.header h1{font-size:20px}.header h1 span{display:block;margin-left:0;margin-top:2px}.main-tab{padding:12px 16px;font-size:14px}.tab-btn{padding:8px 10px;font-size:12px}.summary{grid-template-columns:repeat(2,1fr)}.donate-btn{padding:8px 14px;font-size:12px}td,th{padding:8px 6px;font-size:12px}}
+*{margin:0;padding:0;box-sizing:border-box}body{background:#0f1117;color:#e1e4ea;font-family:-apple-system,'Pretendard','Noto Sans KR',sans-serif;line-height:1.5;padding:16px;max-width:1200px;margin:0 auto}a{color:#818cf8;text-decoration:none}.header{padding:24px 0 16px;border-bottom:1px solid #252836;margin-bottom:20px;display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px}.header-left{flex:1;min-width:0}.header h1{font-size:24px;font-weight:800;color:#fff}.header h1 span{color:#818cf8;font-weight:400;font-size:14px;margin-left:8px}.header .meta{color:#8b8fa3;font-size:13px;margin-top:4px}.donate-btn{display:inline-flex;align-items:center;gap:6px;padding:10px 18px;background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff;border-radius:10px;font-size:13px;font-weight:600;text-decoration:none;white-space:nowrap;transition:transform .15s,box-shadow .15s;flex-shrink:0}.donate-btn:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(245,158,11,.3)}.live-indicator{color:#34d399;font-weight:600}.live-indicator::before{content:'\25CF ';animation:blink 2s infinite}.refresh-btn{background:#252836;color:#8b8fa3;border:1px solid #363a4e;border-radius:6px;padding:4px 12px;font-size:12px;cursor:pointer;transition:all .15s;margin-left:8px;vertical-align:middle}.refresh-btn:hover{background:#363a4e;color:#e1e4ea}.refresh-btn:disabled{opacity:.5;cursor:not-allowed}@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}.macro-section{margin-bottom:24px}.macro-grid{display:flex;gap:10px;overflow-x:auto;padding-bottom:8px;-webkit-overflow-scrolling:touch;scrollbar-width:thin}.macro-card{flex:0 0 auto;min-width:150px;background:#1a1d27;border:1px solid #252836;border-radius:10px;padding:14px 16px;transition:border-color .15s;position:relative;overflow:hidden}.macro-card:hover{border-color:#363a4e}.macro-name{font-size:11px;color:#636678;font-weight:600;text-transform:uppercase;letter-spacing:.5px}.macro-value{font-size:18px;font-weight:700;margin-top:4px;color:#fff}.macro-change{font-size:12px;margin-top:2px;font-variant-numeric:tabular-nums}.macro-change.positive{color:#34d399}.macro-change.negative{color:#f87171}.spark{display:block;width:100%;height:32px;margin-top:6px}.spark polyline{fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}.spark .area{stroke:none;opacity:.1}.sr{position:absolute;opacity:0;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}.inv-tab{display:inline-block;padding:14px 28px;color:#8b8fa3;cursor:pointer;font-size:16px;font-weight:700;border-bottom:3px solid transparent;margin-bottom:-3px;transition:all .15s}.inv-tab:hover{color:#e1e4ea}.inv-tab-line{border-bottom:2px solid #252836;margin-bottom:20px}.inv-sec{display:none;margin-bottom:40px}#inv-f:checked~#sec-f{display:block}#inv-i:checked~#sec-i{display:block}#inv-f:checked~label[for='inv-f'],#inv-i:checked~label[for='inv-i']{color:#818cf8;border-bottom-color:#818cf8}.main-tab{display:inline-block;padding:12px 20px;color:#8b8fa3;cursor:pointer;font-size:14px;font-weight:600;border-bottom:2px solid transparent;margin-bottom:-2px}.main-tab:hover{color:#e1e4ea}.main-tab-line{border-bottom:2px solid #252836;margin-bottom:16px}.section{display:none}#fm-n:checked~#fm-n-s{display:block}#fm-o:checked~#fm-o-s{display:block}#fm-n:checked~label[for='fm-n'],#fm-o:checked~label[for='fm-o']{color:#818cf8;border-bottom-color:#818cf8}#gm-n:checked~#gm-n-s{display:block}#gm-o:checked~#gm-o-s{display:block}#gm-n:checked~label[for='gm-n'],#gm-o:checked~label[for='gm-o']{color:#818cf8;border-bottom-color:#818cf8}.tabs{display:flex;gap:4px;background:#1a1d27;border-radius:12px;padding:4px;margin-bottom:16px;overflow-x:auto}.tab-btn{display:block;padding:10px 14px;border-radius:10px;color:#8b8fa3;cursor:pointer;font-size:13px;font-weight:500;white-space:nowrap}.tab-btn:hover{color:#e1e4ea}.pp{display:none}#fn0:checked~#fn0v{display:block}#fn1:checked~#fn1v{display:block}#fn2:checked~#fn2v{display:block}#fn3:checked~#fn3v{display:block}#fn4:checked~#fn4v{display:block}#fn5:checked~#fn5v{display:block}#fn6:checked~#fn6v{display:block}#fo0:checked~#fo0v{display:block}#fo1:checked~#fo1v{display:block}#fo2:checked~#fo2v{display:block}#fo3:checked~#fo3v{display:block}#fo4:checked~#fo4v{display:block}#fo5:checked~#fo5v{display:block}#fo6:checked~#fo6v{display:block}#gn0:checked~#gn0v{display:block}#gn1:checked~#gn1v{display:block}#gn2:checked~#gn2v{display:block}#gn3:checked~#gn3v{display:block}#gn4:checked~#gn4v{display:block}#gn5:checked~#gn5v{display:block}#gn6:checked~#gn6v{display:block}#go0:checked~#go0v{display:block}#go1:checked~#go1v{display:block}#go2:checked~#go2v{display:block}#go3:checked~#go3v{display:block}#go4:checked~#go4v{display:block}#go5:checked~#go5v{display:block}#go6:checked~#go6v{display:block}#fn0:checked~.tabs label[for=fn0]{background:#252836;color:#e1e4ea}#fn1:checked~.tabs label[for=fn1]{background:#252836;color:#e1e4ea}#fn2:checked~.tabs label[for=fn2]{background:#252836;color:#e1e4ea}#fn3:checked~.tabs label[for=fn3]{background:#252836;color:#e1e4ea}#fn4:checked~.tabs label[for=fn4]{background:#252836;color:#e1e4ea}#fn5:checked~.tabs label[for=fn5]{background:#252836;color:#e1e4ea}#fn6:checked~.tabs label[for=fn6]{background:#252836;color:#e1e4ea}#fo0:checked~.tabs label[for=fo0]{background:#252836;color:#e1e4ea}#fo1:checked~.tabs label[for=fo1]{background:#252836;color:#e1e4ea}#fo2:checked~.tabs label[for=fo2]{background:#252836;color:#e1e4ea}#fo3:checked~.tabs label[for=fo3]{background:#252836;color:#e1e4ea}#fo4:checked~.tabs label[for=fo4]{background:#252836;color:#e1e4ea}#fo5:checked~.tabs label[for=fo5]{background:#252836;color:#e1e4ea}#fo6:checked~.tabs label[for=fo6]{background:#252836;color:#e1e4ea}#gn0:checked~.tabs label[for=gn0]{background:#252836;color:#e1e4ea}#gn1:checked~.tabs label[for=gn1]{background:#252836;color:#e1e4ea}#gn2:checked~.tabs label[for=gn2]{background:#252836;color:#e1e4ea}#gn3:checked~.tabs label[for=gn3]{background:#252836;color:#e1e4ea}#gn4:checked~.tabs label[for=gn4]{background:#252836;color:#e1e4ea}#gn5:checked~.tabs label[for=gn5]{background:#252836;color:#e1e4ea}#gn6:checked~.tabs label[for=gn6]{background:#252836;color:#e1e4ea}#go0:checked~.tabs label[for=go0]{background:#252836;color:#e1e4ea}#go1:checked~.tabs label[for=go1]{background:#252836;color:#e1e4ea}#go2:checked~.tabs label[for=go2]{background:#252836;color:#e1e4ea}#go3:checked~.tabs label[for=go3]{background:#252836;color:#e1e4ea}#go4:checked~.tabs label[for=go4]{background:#252836;color:#e1e4ea}#go5:checked~.tabs label[for=go5]{background:#252836;color:#e1e4ea}#go6:checked~.tabs label[for=go6]{background:#252836;color:#e1e4ea}.summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:16px}.stat-card{background:#1a1d27;border:1px solid #252836;border-radius:10px;padding:14px}.stat-card .label{font-size:11px;color:#636678;text-transform:uppercase;letter-spacing:.5px}.stat-card .value{font-size:18px;font-weight:700;margin-top:4px}.stat-card .value.green{color:#34d399}.stat-card .value.red{color:#f87171}.stat-card .value.accent{color:#818cf8}.stat-card .value.amber{color:#fbbf24}.table-wrap{overflow-x:auto;border-radius:10px;border:1px solid #252836}table{width:100%;border-collapse:collapse;font-size:13px}thead th{background:#1a1d27;padding:10px 12px;text-align:left;font-weight:600;color:#8b8fa3;position:sticky;top:0;white-space:nowrap}tbody tr{border-top:1px solid #252836;transition:background .1s}tbody tr:hover{background:#1a1d27}tbody tr:nth-child(even){background:#14161e}td{padding:10px 12px;white-space:nowrap}td.right{text-align:right;font-variant-numeric:tabular-nums}td .sub{font-size:11px;color:#636678}.positive{color:#34d399}.negative{color:#f87171}.badge{display:inline-block;font-size:11px;padding:2px 8px;border-radius:6px}.badge-kospi{background:rgba(79,70,229,.15);color:#a5b4fc}.badge-kosdaq{background:rgba(251,191,36,.12);color:#fbbf24}.empty-msg{text-align:center;color:#636678;padding:40px}@media(max-width:768px){body{padding:8px}.header h1{font-size:20px}.header h1 span{display:block;margin-left:0;margin-top:2px}.inv-tab{padding:12px 18px;font-size:14px}.main-tab{padding:10px 14px;font-size:13px}.tab-btn{padding:8px 10px;font-size:12px}.summary{grid-template-columns:repeat(2,1fr)}.donate-btn{padding:8px 14px;font-size:12px}.macro-card{min-width:110px;padding:10px 12px}.macro-value{font-size:15px}td,th{padding:8px 6px;font-size:12px}}
 </style>
 </head>
 <body>
 
 <div class="header">
   <div class="header-left">
-    <h1>UTONG <span>외국인 수급 추적 대시보드</span></h1>
-    <div class="meta">기준일: 2026.03.19 18:42 | KOSPI + KOSDAQ | Data: Naver Finance <button class="refresh-btn" id="refresh-btn">↻ 새로고침</button></div>
+    <h1>UTONG <span>시장 대시보드</span></h1>
+    <div class="meta">기준일: <span id="meta-date">2026.03.20 14:21</span> | KOSPI + KOSDAQ | Data: KIS OpenAPI <button class="refresh-btn" id="refresh-btn">↻ 새로고침</button></div>
   </div>
   <a href="https://qr.kakaopay.com/Ej759Ivs1" target="_blank" rel="noopener" class="donate-btn">
     ☕ 커피 한 잔 후원하기
   </a>
 </div>
 
-<input type="radio" name="main" id="tab-net" checked class="sr">
-<input type="radio" name="main" id="tab-own" class="sr">
-<label for="tab-net" class="main-tab">순매수 금액 TOP 10</label><label for="tab-own" class="main-tab">지분율 증가 TOP 10</label>
+<div class="macro-section">
+<div class="macro-grid">
+<div class="macro-card" data-macro="KOSPI"><div class="macro-name">KOSPI</div><div class="macro-value">5,773.71</div><div class="macro-change positive">+10.49 (+0.18%)</div><svg class="spark" viewBox="0 0 120 32" preserveAspectRatio="none"></svg></div>
+<div class="macro-card" data-macro="KOSDAQ"><div class="macro-name">KOSDAQ</div><div class="macro-value">1,158.77</div><div class="macro-change positive">+15.29 (+1.34%)</div><svg class="spark" viewBox="0 0 120 32" preserveAspectRatio="none"></svg></div>
+<div class="macro-card" data-macro="S&P 500"><div class="macro-name">S&P 500</div><div class="macro-value">6,606.49</div><div class="macro-change negative">-18.21 (-0.27%)</div><svg class="spark" viewBox="0 0 120 32" preserveAspectRatio="none"></svg></div>
+<div class="macro-card" data-macro="NASDAQ"><div class="macro-name">NASDAQ</div><div class="macro-value">22,090.69</div><div class="macro-change negative">-61.73 (-0.28%)</div><svg class="spark" viewBox="0 0 120 32" preserveAspectRatio="none"></svg></div>
+<div class="macro-card" data-macro="Brent유"><div class="macro-name">Brent유</div><div class="macro-value">$101.04</div><div class="macro-change negative">-2.19 (-2.12%)</div><svg class="spark" viewBox="0 0 120 32" preserveAspectRatio="none"></svg></div>
+<div class="macro-card" data-macro="USD/KRW"><div class="macro-name">USD/KRW</div><div class="macro-value">1,489.8</div><div class="macro-change negative">-15.4 (-1.02%)</div><svg class="spark" viewBox="0 0 120 32" preserveAspectRatio="none"></svg></div>
+</div>
+</div>
+
+<input type="radio" name="inv" id="inv-f" checked class="sr">
+<input type="radio" name="inv" id="inv-i" class="sr">
+<label for="inv-f" class="inv-tab">외국인 수급</label><label for="inv-i" class="inv-tab">기관 수급</label>
+<div class="inv-tab-line"></div>
+
+<div class="inv-sec" id="sec-f">
+<input type="radio" name="fm" id="fm-n" checked class="sr">
+<input type="radio" name="fm" id="fm-o" class="sr">
+<label for="fm-n" class="main-tab">순매수 금액 TOP 10</label><label for="fm-o" class="main-tab">보유비율 증가 TOP 10</label>
 <div class="main-tab-line"></div>
+<div class="section" id="fm-n-s">
+<input type="radio" name="fn" id="fn0" checked class="sr">
+<input type="radio" name="fn" id="fn1" class="sr">
+<input type="radio" name="fn" id="fn2" class="sr">
+<input type="radio" name="fn" id="fn3" class="sr">
+<input type="radio" name="fn" id="fn4" class="sr">
+<input type="radio" name="fn" id="fn5" class="sr">
+<input type="radio" name="fn" id="fn6" class="sr">
+<div class="tabs"><label for="fn0" class="tab-btn">당일</label><label for="fn1" class="tab-btn">전일</label><label for="fn2" class="tab-btn">최근 3일</label><label for="fn3" class="tab-btn">최근 1주일</label><label for="fn4" class="tab-btn">최근 2주일</label><label for="fn5" class="tab-btn">최근 1개월</label><label for="fn6" class="tab-btn">최근 3개월</label></div>
+<div class="pp" id="fn0v">
+<div class="summary"><div class="stat-card"><div class="label">1위 종목</div><div class="value accent">두산에너빌리티</div></div><div class="stat-card"><div class="label">전체 합계</div><div class="value green">+8,980억</div></div><div class="stat-card"><div class="label">KOSPI</div><div class="value green">+6,096억</div></div><div class="stat-card"><div class="label">KOSDAQ</div><div class="value green">+2,883억</div></div></div>
+<div class="table-wrap"><table>
+<thead><tr><th>#</th><th>종목명</th><th>시장</th><th>종가</th><th>순매수금액</th><th>순매수수량</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>두산에너빌리티 <span class="sub">034020</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">109,700원<br><span class="sub positive">+3.20%</span></td><td class="right positive">+1,253억</td><td class="right positive">+1.1M</td></tr>
+<tr><td>2</td><td>삼천당제약 <span class="sub">000250</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">911,000원<br><span class="sub positive">+14.59%</span></td><td class="right positive">+470.6억</td><td class="right positive">+52K</td></tr>
+<tr><td>3</td><td>대한항공 <span class="sub">003490</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">26,050원<br><span class="sub positive">+6.11%</span></td><td class="right positive">+424.4억</td><td class="right positive">+1.6M</td></tr>
+<tr><td>4</td><td>미래에셋증권 <span class="sub">006800</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">68,000원<br><span class="sub positive">+1.95%</span></td><td class="right positive">+347.0억</td><td class="right positive">+511K</td></tr>
+<tr><td>5</td><td>포스코인터내셔널 <span class="sub">047050</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">75,800원<br><span class="sub positive">+5.57%</span></td><td class="right positive">+297.5억</td><td class="right positive">+392K</td></tr>
+<tr><td>6</td><td>에이피알 <span class="sub">278470</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">361,500원<br><span class="sub negative">-2.03%</span></td><td class="right positive">+270.8억</td><td class="right positive">+75K</td></tr>
+<tr><td>7</td><td>주성엔지니어링 <span class="sub">036930</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">75,000원<br><span class="sub positive">+22.95%</span></td><td class="right positive">+256.3억</td><td class="right positive">+344K</td></tr>
+<tr><td>8</td><td>한화솔루션 <span class="sub">009830</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">52,700원<br><span class="sub positive">+5.93%</span></td><td class="right positive">+238.9억</td><td class="right positive">+455K</td></tr>
+<tr><td>9</td><td>삼성생명 <span class="sub">032830</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">226,500원<br><span class="sub negative">-1.74%</span></td><td class="right positive">+235.6억</td><td class="right positive">+104K</td></tr>
+<tr><td>10</td><td>한미반도체 <span class="sub">042700</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">308,500원<br><span class="sub positive">+0.49%</span></td><td class="right positive">+234.8억</td><td class="right positive">+76K</td></tr>
+</tbody></table></div>
+</div>
+<div class="pp" id="fn1v">
+<div class="summary"><div class="stat-card"><div class="label">1위 종목</div><div class="value accent">두산에너빌리티</div></div><div class="stat-card"><div class="label">전체 합계</div><div class="value red">-12,613억</div></div><div class="stat-card"><div class="label">KOSPI</div><div class="value red">-12,775억</div></div><div class="stat-card"><div class="label">KOSDAQ</div><div class="value green">+162.0억</div></div></div>
+<div class="table-wrap"><table>
+<thead><tr><th>#</th><th>종목명</th><th>시장</th><th>종가</th><th>순매수금액</th><th>순매수수량</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>두산에너빌리티 <span class="sub">034020</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">109,700원<br><span class="sub positive">+3.20%</span></td><td class="right positive">+335.6억</td><td class="right positive">+312K</td></tr>
+<tr><td>2</td><td>KB금융 <span class="sub">105560</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">155,600원<br><span class="sub negative">-0.06%</span></td><td class="right positive">+225.7억</td><td class="right positive">+145K</td></tr>
+<tr><td>3</td><td>파두 <span class="sub">440110</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">58,600원<br><span class="sub positive">+2.81%</span></td><td class="right positive">+190.6억</td><td class="right positive">+333K</td></tr>
+<tr><td>4</td><td>HPSP <span class="sub">403870</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">50,300원<br><span class="sub negative">-2.71%</span></td><td class="right positive">+176.6억</td><td class="right positive">+341K</td></tr>
+<tr><td>5</td><td>SK <span class="sub">034730</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">361,000원<br><span class="sub positive">+4.34%</span></td><td class="right positive">+125.3억</td><td class="right positive">+36K</td></tr>
+<tr><td>6</td><td>LG이노텍 <span class="sub">011070</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">293,000원<br><span class="sub positive">+2.45%</span></td><td class="right positive">+116.1억</td><td class="right positive">+41K</td></tr>
+<tr><td>7</td><td>서진시스템 <span class="sub">178320</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">48,950원<br><span class="sub positive">+7.82%</span></td><td class="right positive">+81.5억</td><td class="right positive">+178K</td></tr>
+<tr><td>8</td><td>에이비엘바이오 <span class="sub">298380</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">189,500원<br><span class="sub negative">-0.26%</span></td><td class="right positive">+69.6억</td><td class="right positive">+36K</td></tr>
+<tr><td>9</td><td>삼천당제약 <span class="sub">000250</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">911,000원<br><span class="sub positive">+14.59%</span></td><td class="right positive">+54.1억</td><td class="right positive">+7K</td></tr>
+<tr><td>10</td><td>파마리서치 <span class="sub">214450</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">328,000원<br><span class="sub positive">+2.34%</span></td><td class="right positive">+49.1억</td><td class="right positive">+15K</td></tr>
+</tbody></table></div>
+</div>
+<div class="pp" id="fn2v">
+<div class="summary"><div class="stat-card"><div class="label">1위 종목</div><div class="value accent">두산에너빌리티</div></div><div class="stat-card"><div class="label">전체 합계</div><div class="value red">-1,401억</div></div><div class="stat-card"><div class="label">KOSPI</div><div class="value red">-2,700억</div></div><div class="stat-card"><div class="label">KOSDAQ</div><div class="value green">+1,299억</div></div></div>
+<div class="table-wrap"><table>
+<thead><tr><th>#</th><th>종목명</th><th>시장</th><th>종가</th><th>순매수금액</th><th>순매수수량</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>두산에너빌리티 <span class="sub">034020</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">109,700원<br><span class="sub positive">+3.20%</span></td><td class="right positive">+1,630억</td><td class="right positive">+1.5M</td></tr>
+<tr><td>2</td><td>SK하이닉스 <span class="sub">000660</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">1,006,000원<br><span class="sub negative">-0.69%</span></td><td class="right positive">+1,262억</td><td class="right positive">+122K</td></tr>
+<tr><td>3</td><td>HPSP <span class="sub">403870</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">50,300원<br><span class="sub negative">-2.71%</span></td><td class="right positive">+802.5억</td><td class="right positive">+1.6M</td></tr>
+<tr><td>4</td><td>파두 <span class="sub">440110</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">58,600원<br><span class="sub positive">+2.81%</span></td><td class="right positive">+300.6억</td><td class="right positive">+515K</td></tr>
+<tr><td>5</td><td>삼천당제약 <span class="sub">000250</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">911,000원<br><span class="sub positive">+14.59%</span></td><td class="right positive">+279.5억</td><td class="right positive">+36K</td></tr>
+<tr><td>6</td><td>에이비엘바이오 <span class="sub">298380</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">189,500원<br><span class="sub negative">-0.26%</span></td><td class="right positive">+270.1억</td><td class="right positive">+139K</td></tr>
+<tr><td>7</td><td>현대건설 <span class="sub">000720</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">168,400원<br><span class="sub negative">-0.65%</span></td><td class="right positive">+252.1억</td><td class="right positive">+151K</td></tr>
+<tr><td>8</td><td>삼성SDI <span class="sub">006400</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">400,500원<br><span class="sub negative">-0.50%</span></td><td class="right positive">+210.1억</td><td class="right positive">+52K</td></tr>
+<tr><td>9</td><td>심텍 <span class="sub">222800</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">62,700원<br><span class="sub positive">+4.33%</span></td><td class="right positive">+198.9억</td><td class="right positive">+335K</td></tr>
+<tr><td>10</td><td>LG이노텍 <span class="sub">011070</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">293,000원<br><span class="sub positive">+2.45%</span></td><td class="right positive">+184.5억</td><td class="right positive">+67K</td></tr>
+</tbody></table></div>
+</div>
+<div class="pp" id="fn3v">
+<div class="summary"><div class="stat-card"><div class="label">1위 종목</div><div class="value accent">SK하이닉스</div></div><div class="stat-card"><div class="label">전체 합계</div><div class="value red">-6,013억</div></div><div class="stat-card"><div class="label">KOSPI</div><div class="value red">-6,112억</div></div><div class="stat-card"><div class="label">KOSDAQ</div><div class="value green">+98.5억</div></div></div>
+<div class="table-wrap"><table>
+<thead><tr><th>#</th><th>종목명</th><th>시장</th><th>종가</th><th>순매수금액</th><th>순매수수량</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>SK하이닉스 <span class="sub">000660</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">1,006,000원<br><span class="sub negative">-0.69%</span></td><td class="right positive">+2,147억</td><td class="right positive">+225K</td></tr>
+<tr><td>2</td><td>HPSP <span class="sub">403870</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">50,300원<br><span class="sub negative">-2.71%</span></td><td class="right positive">+1,019억</td><td class="right positive">+2.1M</td></tr>
+<tr><td>3</td><td>두산에너빌리티 <span class="sub">034020</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">109,700원<br><span class="sub positive">+3.20%</span></td><td class="right positive">+779.0억</td><td class="right positive">+707K</td></tr>
+<tr><td>4</td><td>삼성SDI <span class="sub">006400</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">400,500원<br><span class="sub negative">-0.50%</span></td><td class="right positive">+653.8억</td><td class="right positive">+167K</td></tr>
+<tr><td>5</td><td>S-Oil <span class="sub">010950</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">111,300원<br><span class="sub positive">+0.09%</span></td><td class="right positive">+468.7억</td><td class="right positive">+441K</td></tr>
+<tr><td>6</td><td>심텍 <span class="sub">222800</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">62,700원<br><span class="sub positive">+4.33%</span></td><td class="right positive">+429.6억</td><td class="right positive">+749K</td></tr>
+<tr><td>7</td><td>SK <span class="sub">034730</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">361,000원<br><span class="sub positive">+4.34%</span></td><td class="right positive">+422.0억</td><td class="right positive">+124K</td></tr>
+<tr><td>8</td><td>에이비엘바이오 <span class="sub">298380</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">189,500원<br><span class="sub negative">-0.26%</span></td><td class="right positive">+398.8억</td><td class="right positive">+204K</td></tr>
+<tr><td>9</td><td>삼천당제약 <span class="sub">000250</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">911,000원<br><span class="sub positive">+14.59%</span></td><td class="right positive">+398.6억</td><td class="right positive">+52K</td></tr>
+<tr><td>10</td><td>에이피알 <span class="sub">278470</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">361,500원<br><span class="sub negative">-2.03%</span></td><td class="right positive">+393.6억</td><td class="right positive">+111K</td></tr>
+</tbody></table></div>
+</div>
+<div class="pp" id="fn4v">
+<div class="summary"><div class="stat-card"><div class="label">1위 종목</div><div class="value accent">두산에너빌리티</div></div><div class="stat-card"><div class="label">전체 합계</div><div class="value red">-51,588억</div></div><div class="stat-card"><div class="label">KOSPI</div><div class="value red">-45,936억</div></div><div class="stat-card"><div class="label">KOSDAQ</div><div class="value red">-5,652억</div></div></div>
+<div class="table-wrap"><table>
+<thead><tr><th>#</th><th>종목명</th><th>시장</th><th>종가</th><th>순매수금액</th><th>순매수수량</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>두산에너빌리티 <span class="sub">034020</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">109,700원<br><span class="sub positive">+3.20%</span></td><td class="right positive">+3,644억</td><td class="right positive">+3.3M</td></tr>
+<tr><td>2</td><td>삼성중공업 <span class="sub">010140</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">28,650원<br><span class="sub positive">+0.53%</span></td><td class="right positive">+1,183억</td><td class="right positive">+3.7M</td></tr>
+<tr><td>3</td><td>에이피알 <span class="sub">278470</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">361,500원<br><span class="sub negative">-2.03%</span></td><td class="right positive">+1,053억</td><td class="right positive">+319K</td></tr>
+<tr><td>4</td><td>한화오션 <span class="sub">042660</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">129,700원<br><span class="sub negative">-0.23%</span></td><td class="right positive">+771.0억</td><td class="right positive">+534K</td></tr>
+<tr><td>5</td><td>SK이노베이션 <span class="sub">096770</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">113,500원<br><span class="sub positive">+2.90%</span></td><td class="right positive">+641.6억</td><td class="right positive">+515K</td></tr>
+<tr><td>6</td><td>삼천당제약 <span class="sub">000250</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">911,000원<br><span class="sub positive">+14.59%</span></td><td class="right positive">+593.5억</td><td class="right positive">+78K</td></tr>
+<tr><td>7</td><td>로킷헬스케어 <span class="sub">376900</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">128,900원<br><span class="sub positive">+0.16%</span></td><td class="right positive">+329.9억</td><td class="right positive">+309K</td></tr>
+<tr><td>8</td><td>파마리서치 <span class="sub">214450</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">328,000원<br><span class="sub positive">+2.34%</span></td><td class="right positive">+292.5억</td><td class="right positive">+92K</td></tr>
+<tr><td>9</td><td>HLB <span class="sub">028300</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">50,900원<br><span class="sub positive">+0.99%</span></td><td class="right positive">+270.6억</td><td class="right positive">+538K</td></tr>
+<tr><td>10</td><td>삼성생명 <span class="sub">032830</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">226,500원<br><span class="sub negative">-1.74%</span></td><td class="right positive">+262.7억</td><td class="right positive">+135K</td></tr>
+</tbody></table></div>
+</div>
+<div class="pp" id="fn5v">
+<div class="summary"><div class="stat-card"><div class="label">1위 종목</div><div class="value accent">두산에너빌리티</div></div><div class="stat-card"><div class="label">전체 합계</div><div class="value red">-270,944억</div></div><div class="stat-card"><div class="label">KOSPI</div><div class="value red">-274,061억</div></div><div class="stat-card"><div class="label">KOSDAQ</div><div class="value green">+3,117억</div></div></div>
+<div class="table-wrap"><table>
+<thead><tr><th>#</th><th>종목명</th><th>시장</th><th>종가</th><th>순매수금액</th><th>순매수수량</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>두산에너빌리티 <span class="sub">034020</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">109,700원<br><span class="sub positive">+3.20%</span></td><td class="right positive">+4,794억</td><td class="right positive">+4.3M</td></tr>
+<tr><td>2</td><td>에이피알 <span class="sub">278470</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">361,500원<br><span class="sub negative">-2.03%</span></td><td class="right positive">+4,043억</td><td class="right positive">+1.3M</td></tr>
+<tr><td>3</td><td>삼성중공업 <span class="sub">010140</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">28,650원<br><span class="sub positive">+0.53%</span></td><td class="right positive">+3,367억</td><td class="right positive">+11.6M</td></tr>
+<tr><td>4</td><td>한화오션 <span class="sub">042660</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">129,700원<br><span class="sub negative">-0.23%</span></td><td class="right positive">+3,362억</td><td class="right positive">+2.3M</td></tr>
+<tr><td>5</td><td>삼성SDI <span class="sub">006400</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">400,500원<br><span class="sub negative">-0.50%</span></td><td class="right positive">+2,536억</td><td class="right positive">+611K</td></tr>
+<tr><td>6</td><td>LG화학 <span class="sub">051910</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">308,500원<br><span class="sub positive">+1.65%</span></td><td class="right positive">+2,397억</td><td class="right positive">+598K</td></tr>
+<tr><td>7</td><td>HPSP <span class="sub">403870</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">50,300원<br><span class="sub negative">-2.71%</span></td><td class="right positive">+2,347억</td><td class="right positive">+5.3M</td></tr>
+<tr><td>8</td><td>현대건설 <span class="sub">000720</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">168,400원<br><span class="sub negative">-0.65%</span></td><td class="right positive">+2,102억</td><td class="right positive">+1.5M</td></tr>
+<tr><td>9</td><td>LG이노텍 <span class="sub">011070</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">293,000원<br><span class="sub positive">+2.45%</span></td><td class="right positive">+1,733억</td><td class="right positive">+604K</td></tr>
+<tr><td>10</td><td>LG전자 <span class="sub">066570</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">117,100원<br><span class="sub positive">+0.77%</span></td><td class="right positive">+1,433억</td><td class="right positive">+1.2M</td></tr>
+</tbody></table></div>
+</div>
+<div class="pp" id="fn6v">
+<div class="summary"><div class="stat-card"><div class="label">1위 종목</div><div class="value accent">두산에너빌리티</div></div><div class="stat-card"><div class="label">전체 합계</div><div class="value red">-309,065억</div></div><div class="stat-card"><div class="label">KOSPI</div><div class="value red">-309,553억</div></div><div class="stat-card"><div class="label">KOSDAQ</div><div class="value green">+487.9억</div></div></div>
+<div class="table-wrap"><table>
+<thead><tr><th>#</th><th>종목명</th><th>시장</th><th>종가</th><th>순매수금액</th><th>순매수수량</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>두산에너빌리티 <span class="sub">034020</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">109,700원<br><span class="sub positive">+3.20%</span></td><td class="right positive">+10,872억</td><td class="right positive">+10.4M</td></tr>
+<tr><td>2</td><td>에이피알 <span class="sub">278470</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">361,500원<br><span class="sub negative">-2.03%</span></td><td class="right positive">+5,220억</td><td class="right positive">+1.7M</td></tr>
+<tr><td>3</td><td>삼성SDI <span class="sub">006400</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">400,500원<br><span class="sub negative">-0.50%</span></td><td class="right positive">+3,755억</td><td class="right positive">+921K</td></tr>
+<tr><td>4</td><td>LG화학 <span class="sub">051910</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">308,500원<br><span class="sub positive">+1.65%</span></td><td class="right positive">+3,458억</td><td class="right positive">+919K</td></tr>
+<tr><td>5</td><td>한화솔루션 <span class="sub">009830</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">52,700원<br><span class="sub positive">+5.93%</span></td><td class="right positive">+3,399억</td><td class="right positive">+8.2M</td></tr>
+<tr><td>6</td><td>삼성중공업 <span class="sub">010140</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">28,650원<br><span class="sub positive">+0.53%</span></td><td class="right positive">+3,313억</td><td class="right positive">+11.4M</td></tr>
+<tr><td>7</td><td>삼천당제약 <span class="sub">000250</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">911,000원<br><span class="sub positive">+14.59%</span></td><td class="right positive">+2,568억</td><td class="right positive">+425K</td></tr>
+<tr><td>8</td><td>HPSP <span class="sub">403870</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">50,300원<br><span class="sub negative">-2.71%</span></td><td class="right positive">+2,026억</td><td class="right positive">+4.6M</td></tr>
+<tr><td>9</td><td>LG전자 <span class="sub">066570</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">117,100원<br><span class="sub positive">+0.77%</span></td><td class="right positive">+1,940억</td><td class="right positive">+1.9M</td></tr>
+<tr><td>10</td><td>대한전선 <span class="sub">001440</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">30,750원<br><span class="sub positive">+2.16%</span></td><td class="right positive">+1,775억</td><td class="right positive">+5.6M</td></tr>
+</tbody></table></div>
+</div>
+</div>
+<div class="section" id="fm-o-s">
+<input type="radio" name="fo" id="fo0" checked class="sr">
+<input type="radio" name="fo" id="fo1" class="sr">
+<input type="radio" name="fo" id="fo2" class="sr">
+<input type="radio" name="fo" id="fo3" class="sr">
+<input type="radio" name="fo" id="fo4" class="sr">
+<input type="radio" name="fo" id="fo5" class="sr">
+<input type="radio" name="fo" id="fo6" class="sr">
+<div class="tabs"><label for="fo0" class="tab-btn">당일</label><label for="fo1" class="tab-btn">전일</label><label for="fo2" class="tab-btn">최근 3일</label><label for="fo3" class="tab-btn">최근 1주일</label><label for="fo4" class="tab-btn">최근 2주일</label><label for="fo5" class="tab-btn">최근 1개월</label><label for="fo6" class="tab-btn">최근 3개월</label></div>
+<div class="pp" id="fo0v">
+<div class="summary"><div class="stat-card"><div class="label">1위 종목</div><div class="value accent">두산에너빌리티</div></div><div class="stat-card"><div class="label">최대 증가</div><div class="value green">+0.00%p</div></div><div class="stat-card"><div class="label">평균 증가</div><div class="value green">+0.00%p</div></div><div class="stat-card"><div class="label">종목 수</div><div class="value amber">100</div></div></div>
+<div class="table-wrap"><table>
+<thead><tr><th>#</th><th>종목명</th><th>시장</th><th>종가</th><th>현재 지분율</th><th>지분율 변동</th><th>보유수량 변동</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>두산에너빌리티 <span class="sub">034020</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">109,700원<br><span class="sub positive">+3.20%</span></td><td class="right">24.24%</td><td class="right ">+0.00%p</td><td class="right ">+0</td></tr>
+<tr><td>2</td><td>삼천당제약 <span class="sub">000250</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">911,000원<br><span class="sub positive">+14.59%</span></td><td class="right">5.89%</td><td class="right ">+0.00%p</td><td class="right ">+0</td></tr>
+<tr><td>3</td><td>대한항공 <span class="sub">003490</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">26,050원<br><span class="sub positive">+6.11%</span></td><td class="right">37.99%</td><td class="right ">+0.00%p</td><td class="right ">+0</td></tr>
+<tr><td>4</td><td>미래에셋증권 <span class="sub">006800</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">68,000원<br><span class="sub positive">+1.95%</span></td><td class="right">9.86%</td><td class="right ">+0.00%p</td><td class="right ">+0</td></tr>
+<tr><td>5</td><td>포스코인터내셔널 <span class="sub">047050</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">75,800원<br><span class="sub positive">+5.57%</span></td><td class="right">6.73%</td><td class="right ">+0.00%p</td><td class="right ">+0</td></tr>
+<tr><td>6</td><td>에이피알 <span class="sub">278470</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">361,500원<br><span class="sub negative">-2.03%</span></td><td class="right">34.85%</td><td class="right ">+0.00%p</td><td class="right ">+0</td></tr>
+<tr><td>7</td><td>주성엔지니어링 <span class="sub">036930</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">75,000원<br><span class="sub positive">+22.95%</span></td><td class="right">9.63%</td><td class="right ">+0.00%p</td><td class="right ">+0</td></tr>
+<tr><td>8</td><td>한화솔루션 <span class="sub">009830</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">52,700원<br><span class="sub positive">+5.93%</span></td><td class="right">14.46%</td><td class="right ">+0.00%p</td><td class="right ">+0</td></tr>
+<tr><td>9</td><td>삼성생명 <span class="sub">032830</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">226,500원<br><span class="sub negative">-1.74%</span></td><td class="right">22.97%</td><td class="right ">+0.00%p</td><td class="right ">+0</td></tr>
+<tr><td>10</td><td>한미반도체 <span class="sub">042700</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">308,500원<br><span class="sub positive">+0.49%</span></td><td class="right">7.22%</td><td class="right ">+0.00%p</td><td class="right ">+0</td></tr>
+</tbody></table></div>
+</div>
+<div class="pp" id="fo1v">
+<div class="summary"><div class="stat-card"><div class="label">1위 종목</div><div class="value accent">파두</div></div><div class="stat-card"><div class="label">최대 증가</div><div class="value green">+0.67%p</div></div><div class="stat-card"><div class="label">평균 증가</div><div class="value green">-0.03%p</div></div><div class="stat-card"><div class="label">종목 수</div><div class="value amber">99</div></div></div>
+<div class="table-wrap"><table>
+<thead><tr><th>#</th><th>종목명</th><th>시장</th><th>종가</th><th>현재 지분율</th><th>지분율 변동</th><th>보유수량 변동</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>파두 <span class="sub">440110</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">58,600원<br><span class="sub positive">+2.81%</span></td><td class="right">8.98%</td><td class="right positive">+0.67%p</td><td class="right positive">+333K</td></tr>
+<tr><td>2</td><td>오킨스전자 <span class="sub">080580</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">20,650원<br><span class="sub negative">-0.96%</span></td><td class="right">10.31%</td><td class="right positive">+0.60%p</td><td class="right positive">+124K</td></tr>
+<tr><td>3</td><td>빛과전자 <span class="sub">069540</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">2,190원<br><span class="sub positive">+29.82%</span></td><td class="right">0.86%</td><td class="right positive">+0.47%p</td><td class="right positive">+456K</td></tr>
+<tr><td>4</td><td>HPSP <span class="sub">403870</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">50,300원<br><span class="sub negative">-2.71%</span></td><td class="right">31.25%</td><td class="right positive">+0.41%p</td><td class="right positive">+341K</td></tr>
+<tr><td>5</td><td>서진시스템 <span class="sub">178320</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">48,950원<br><span class="sub positive">+7.82%</span></td><td class="right">10.10%</td><td class="right positive">+0.30%p</td><td class="right positive">+178K</td></tr>
+<tr><td>6</td><td>네패스 <span class="sub">033640</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">21,300원<br><span class="sub positive">+18.46%</span></td><td class="right">11.54%</td><td class="right positive">+0.21%p</td><td class="right positive">+49K</td></tr>
+<tr><td>7</td><td>원익QnC <span class="sub">074600</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">34,300원<br><span class="sub positive">+1.63%</span></td><td class="right">6.58%</td><td class="right positive">+0.20%p</td><td class="right positive">+53K</td></tr>
+<tr><td>8</td><td>로킷헬스케어 <span class="sub">376900</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">128,900원<br><span class="sub positive">+0.16%</span></td><td class="right">4.17%</td><td class="right positive">+0.18%p</td><td class="right positive">+28K</td></tr>
+<tr><td>9</td><td>파크시스템스 <span class="sub">140860</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">275,000원<br><span class="sub negative">-0.90%</span></td><td class="right">30.36%</td><td class="right positive">+0.18%p</td><td class="right positive">+12K</td></tr>
+<tr><td>10</td><td>LG이노텍 <span class="sub">011070</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">293,000원<br><span class="sub positive">+2.45%</span></td><td class="right">32.17%</td><td class="right positive">+0.17%p</td><td class="right positive">+41K</td></tr>
+</tbody></table></div>
+</div>
+<div class="pp" id="fo2v">
+<div class="summary"><div class="stat-card"><div class="label">1위 종목</div><div class="value accent">HPSP</div></div><div class="stat-card"><div class="label">최대 증가</div><div class="value green">+1.96%p</div></div><div class="stat-card"><div class="label">평균 증가</div><div class="value green">+0.02%p</div></div><div class="stat-card"><div class="label">종목 수</div><div class="value amber">100</div></div></div>
+<div class="table-wrap"><table>
+<thead><tr><th>#</th><th>종목명</th><th>시장</th><th>종가</th><th>현재 지분율</th><th>지분율 변동</th><th>보유수량 변동</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>HPSP <span class="sub">403870</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">50,300원<br><span class="sub negative">-2.71%</span></td><td class="right">31.25%</td><td class="right positive">+1.96%p</td><td class="right positive">+1.6M</td></tr>
+<tr><td>2</td><td>파두 <span class="sub">440110</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">58,600원<br><span class="sub positive">+2.81%</span></td><td class="right">8.98%</td><td class="right positive">+1.03%p</td><td class="right positive">+515K</td></tr>
+<tr><td>3</td><td>심텍 <span class="sub">222800</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">62,700원<br><span class="sub positive">+4.33%</span></td><td class="right">14.24%</td><td class="right positive">+0.90%p</td><td class="right positive">+335K</td></tr>
+<tr><td>4</td><td>한텍 <span class="sub">098070</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">47,500원<br><span class="sub positive">+6.50%</span></td><td class="right">2.45%</td><td class="right positive">+0.77%p</td><td class="right positive">+86K</td></tr>
+<tr><td>5</td><td>빛과전자 <span class="sub">069540</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">2,190원<br><span class="sub positive">+29.82%</span></td><td class="right">0.86%</td><td class="right positive">+0.61%p</td><td class="right positive">+588K</td></tr>
+<tr><td>6</td><td>서진시스템 <span class="sub">178320</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">48,950원<br><span class="sub positive">+7.82%</span></td><td class="right">10.10%</td><td class="right positive">+0.57%p</td><td class="right positive">+336K</td></tr>
+<tr><td>7</td><td>로킷헬스케어 <span class="sub">376900</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">128,900원<br><span class="sub positive">+0.16%</span></td><td class="right">4.17%</td><td class="right positive">+0.48%p</td><td class="right positive">+76K</td></tr>
+<tr><td>8</td><td>대덕전자 <span class="sub">353200</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">83,100원<br><span class="sub positive">+7.50%</span></td><td class="right">15.75%</td><td class="right positive">+0.44%p</td><td class="right positive">+217K</td></tr>
+<tr><td>9</td><td>오킨스전자 <span class="sub">080580</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">20,650원<br><span class="sub negative">-0.96%</span></td><td class="right">10.31%</td><td class="right positive">+0.43%p</td><td class="right positive">+88K</td></tr>
+<tr><td>10</td><td>HD현대에너지솔루션 <span class="sub">322000</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">135,800원<br><span class="sub negative">-0.37%</span></td><td class="right">4.26%</td><td class="right positive">+0.42%p</td><td class="right positive">+47K</td></tr>
+</tbody></table></div>
+</div>
+<div class="pp" id="fo3v">
+<div class="summary"><div class="stat-card"><div class="label">1위 종목</div><div class="value accent">HPSP</div></div><div class="stat-card"><div class="label">최대 증가</div><div class="value green">+2.55%p</div></div><div class="stat-card"><div class="label">평균 증가</div><div class="value green">-0.10%p</div></div><div class="stat-card"><div class="label">종목 수</div><div class="value amber">100</div></div></div>
+<div class="table-wrap"><table>
+<thead><tr><th>#</th><th>종목명</th><th>시장</th><th>종가</th><th>현재 지분율</th><th>지분율 변동</th><th>보유수량 변동</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>HPSP <span class="sub">403870</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">50,300원<br><span class="sub negative">-2.71%</span></td><td class="right">31.25%</td><td class="right positive">+2.55%p</td><td class="right positive">+2.1M</td></tr>
+<tr><td>2</td><td>심텍 <span class="sub">222800</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">62,700원<br><span class="sub positive">+4.33%</span></td><td class="right">14.24%</td><td class="right positive">+2.01%p</td><td class="right positive">+749K</td></tr>
+<tr><td>3</td><td>씨에스베어링 <span class="sub">297090</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">8,590원<br><span class="sub positive">+9.01%</span></td><td class="right">4.25%</td><td class="right positive">+0.73%p</td><td class="right positive">+200K</td></tr>
+<tr><td>4</td><td>HLB이노베이션 <span class="sub">024850</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">4,930원<br><span class="sub negative">-2.38%</span></td><td class="right">2.49%</td><td class="right positive">+0.73%p</td><td class="right positive">+1.1M</td></tr>
+<tr><td>5</td><td>파두 <span class="sub">440110</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">58,600원<br><span class="sub positive">+2.81%</span></td><td class="right">8.98%</td><td class="right positive">+0.68%p</td><td class="right positive">+339K</td></tr>
+<tr><td>6</td><td>빛과전자 <span class="sub">069540</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">2,190원<br><span class="sub positive">+29.82%</span></td><td class="right">0.86%</td><td class="right positive">+0.66%p</td><td class="right positive">+638K</td></tr>
+<tr><td>7</td><td>네패스 <span class="sub">033640</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">21,300원<br><span class="sub positive">+18.46%</span></td><td class="right">11.54%</td><td class="right positive">+0.47%p</td><td class="right positive">+109K</td></tr>
+<tr><td>8</td><td>파마리서치 <span class="sub">214450</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">328,000원<br><span class="sub positive">+2.34%</span></td><td class="right">7.41%</td><td class="right positive">+0.44%p</td><td class="right positive">+46K</td></tr>
+<tr><td>9</td><td>에스피지 <span class="sub">058610</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">119,200원<br><span class="sub negative">-3.25%</span></td><td class="right">5.59%</td><td class="right positive">+0.40%p</td><td class="right positive">+88K</td></tr>
+<tr><td>10</td><td>S-Oil <span class="sub">010950</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">111,300원<br><span class="sub positive">+0.09%</span></td><td class="right">75.51%</td><td class="right positive">+0.39%p</td><td class="right positive">+441K</td></tr>
+</tbody></table></div>
+</div>
+<div class="pp" id="fo4v">
+<div class="summary"><div class="stat-card"><div class="label">1위 종목</div><div class="value accent">로킷헬스케어</div></div><div class="stat-card"><div class="label">최대 증가</div><div class="value green">+1.96%p</div></div><div class="stat-card"><div class="label">평균 증가</div><div class="value green">-0.45%p</div></div><div class="stat-card"><div class="label">종목 수</div><div class="value amber">100</div></div></div>
+<div class="table-wrap"><table>
+<thead><tr><th>#</th><th>종목명</th><th>시장</th><th>종가</th><th>현재 지분율</th><th>지분율 변동</th><th>보유수량 변동</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>로킷헬스케어 <span class="sub">376900</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">128,900원<br><span class="sub positive">+0.16%</span></td><td class="right">4.17%</td><td class="right positive">+1.96%p</td><td class="right positive">+309K</td></tr>
+<tr><td>2</td><td>HLB이노베이션 <span class="sub">024850</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">4,930원<br><span class="sub negative">-2.38%</span></td><td class="right">2.49%</td><td class="right positive">+1.38%p</td><td class="right positive">+2.0M</td></tr>
+<tr><td>3</td><td>심텍 <span class="sub">222800</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">62,700원<br><span class="sub positive">+4.33%</span></td><td class="right">14.24%</td><td class="right positive">+0.95%p</td><td class="right positive">+356K</td></tr>
+<tr><td>4</td><td>파마리서치 <span class="sub">214450</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">328,000원<br><span class="sub positive">+2.34%</span></td><td class="right">7.41%</td><td class="right positive">+0.89%p</td><td class="right positive">+92K</td></tr>
+<tr><td>5</td><td>에이피알 <span class="sub">278470</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">361,500원<br><span class="sub negative">-2.03%</span></td><td class="right">34.85%</td><td class="right positive">+0.85%p</td><td class="right positive">+319K</td></tr>
+<tr><td>6</td><td>케이엠더블유 <span class="sub">032500</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">32,650원<br><span class="sub positive">+11.82%</span></td><td class="right">5.26%</td><td class="right positive">+0.82%p</td><td class="right positive">+339K</td></tr>
+<tr><td>7</td><td>파인엠텍 <span class="sub">441270</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">11,270원<br><span class="sub positive">+5.82%</span></td><td class="right">8.15%</td><td class="right positive">+0.73%p</td><td class="right positive">+304K</td></tr>
+<tr><td>8</td><td>코스맥스 <span class="sub">192820</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">198,500원<br><span class="sub positive">+10.77%</span></td><td class="right">38.75%</td><td class="right positive">+0.60%p</td><td class="right positive">+68K</td></tr>
+<tr><td>9</td><td>코스메카코리아 <span class="sub">241710</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">77,300원<br><span class="sub positive">+4.74%</span></td><td class="right">18.46%</td><td class="right positive">+0.55%p</td><td class="right positive">+59K</td></tr>
+<tr><td>10</td><td>두산에너빌리티 <span class="sub">034020</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">109,700원<br><span class="sub positive">+3.20%</span></td><td class="right">24.24%</td><td class="right positive">+0.52%p</td><td class="right positive">+3.3M</td></tr>
+</tbody></table></div>
+</div>
+<div class="pp" id="fo5v">
+<div class="summary"><div class="stat-card"><div class="label">1위 종목</div><div class="value accent">HPSP</div></div><div class="stat-card"><div class="label">최대 증가</div><div class="value green">+6.46%p</div></div><div class="stat-card"><div class="label">평균 증가</div><div class="value green">+0.05%p</div></div><div class="stat-card"><div class="label">종목 수</div><div class="value amber">100</div></div></div>
+<div class="table-wrap"><table>
+<thead><tr><th>#</th><th>종목명</th><th>시장</th><th>종가</th><th>현재 지분율</th><th>지분율 변동</th><th>보유수량 변동</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>HPSP <span class="sub">403870</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">50,300원<br><span class="sub negative">-2.71%</span></td><td class="right">31.25%</td><td class="right positive">+6.46%p</td><td class="right positive">+5.3M</td></tr>
+<tr><td>2</td><td>로킷헬스케어 <span class="sub">376900</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">128,900원<br><span class="sub positive">+0.16%</span></td><td class="right">4.17%</td><td class="right positive">+4.64%p</td><td class="right positive">+731K</td></tr>
+<tr><td>3</td><td>에이피알 <span class="sub">278470</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">361,500원<br><span class="sub negative">-2.03%</span></td><td class="right">34.85%</td><td class="right positive">+3.54%p</td><td class="right positive">+1.3M</td></tr>
+<tr><td>4</td><td>올릭스 <span class="sub">226950</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">183,300원<br><span class="sub positive">+0.83%</span></td><td class="right">9.06%</td><td class="right positive">+3.08%p</td><td class="right positive">+622K</td></tr>
+<tr><td>5</td><td>LG이노텍 <span class="sub">011070</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">293,000원<br><span class="sub positive">+2.45%</span></td><td class="right">32.17%</td><td class="right positive">+2.55%p</td><td class="right positive">+604K</td></tr>
+<tr><td>6</td><td>원익홀딩스 <span class="sub">030530</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">34,350원<br><span class="sub positive">+5.69%</span></td><td class="right">5.58%</td><td class="right positive">+2.33%p</td><td class="right positive">+1.8M</td></tr>
+<tr><td>7</td><td>하림지주 <span class="sub">003380</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">17,660원<br><span class="sub positive">+16.95%</span></td><td class="right">7.67%</td><td class="right positive">+2.23%p</td><td class="right positive">+2.5M</td></tr>
+<tr><td>8</td><td>하나머티리얼즈 <span class="sub">166090</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">62,900원<br><span class="sub positive">+6.43%</span></td><td class="right">18.18%</td><td class="right positive">+2.03%p</td><td class="right positive">+402K</td></tr>
+<tr><td>9</td><td>심텍 <span class="sub">222800</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">62,700원<br><span class="sub positive">+4.33%</span></td><td class="right">14.24%</td><td class="right positive">+2.03%p</td><td class="right positive">+757K</td></tr>
+<tr><td>10</td><td>HLB이노베이션 <span class="sub">024850</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">4,930원<br><span class="sub negative">-2.38%</span></td><td class="right">2.49%</td><td class="right positive">+2.03%p</td><td class="right positive">+3.0M</td></tr>
+</tbody></table></div>
+</div>
+<div class="pp" id="fo6v">
+<div class="summary"><div class="stat-card"><div class="label">1위 종목</div><div class="value accent">HPSP</div></div><div class="stat-card"><div class="label">최대 증가</div><div class="value green">+5.65%p</div></div><div class="stat-card"><div class="label">평균 증가</div><div class="value green">+0.15%p</div></div><div class="stat-card"><div class="label">종목 수</div><div class="value amber">100</div></div></div>
+<div class="table-wrap"><table>
+<thead><tr><th>#</th><th>종목명</th><th>시장</th><th>종가</th><th>현재 지분율</th><th>지분율 변동</th><th>보유수량 변동</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>HPSP <span class="sub">403870</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">50,300원<br><span class="sub negative">-2.71%</span></td><td class="right">31.25%</td><td class="right positive">+5.65%p</td><td class="right positive">+4.6M</td></tr>
+<tr><td>2</td><td>로킷헬스케어 <span class="sub">376900</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">128,900원<br><span class="sub positive">+0.16%</span></td><td class="right">4.17%</td><td class="right positive">+4.99%p</td><td class="right positive">+786K</td></tr>
+<tr><td>3</td><td>한화솔루션 <span class="sub">009830</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">52,700원<br><span class="sub positive">+5.93%</span></td><td class="right">14.46%</td><td class="right positive">+4.79%p</td><td class="right positive">+8.2M</td></tr>
+<tr><td>4</td><td>에이피알 <span class="sub">278470</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">361,500원<br><span class="sub negative">-2.03%</span></td><td class="right">34.85%</td><td class="right positive">+4.58%p</td><td class="right positive">+1.7M</td></tr>
+<tr><td>5</td><td>대한전선 <span class="sub">001440</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">30,750원<br><span class="sub positive">+2.16%</span></td><td class="right">10.01%</td><td class="right positive">+2.99%p</td><td class="right positive">+5.6M</td></tr>
+<tr><td>6</td><td>올릭스 <span class="sub">226950</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">183,300원<br><span class="sub positive">+0.83%</span></td><td class="right">9.06%</td><td class="right positive">+2.73%p</td><td class="right positive">+552K</td></tr>
+<tr><td>7</td><td>하나머티리얼즈 <span class="sub">166090</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">62,900원<br><span class="sub positive">+6.43%</span></td><td class="right">18.18%</td><td class="right positive">+2.66%p</td><td class="right positive">+527K</td></tr>
+<tr><td>8</td><td>코스메카코리아 <span class="sub">241710</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">77,300원<br><span class="sub positive">+4.74%</span></td><td class="right">18.46%</td><td class="right positive">+2.33%p</td><td class="right positive">+249K</td></tr>
+<tr><td>9</td><td>HLB이노베이션 <span class="sub">024850</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">4,930원<br><span class="sub negative">-2.38%</span></td><td class="right">2.49%</td><td class="right positive">+2.25%p</td><td class="right positive">+3.3M</td></tr>
+<tr><td>10</td><td>LG이노텍 <span class="sub">011070</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">293,000원<br><span class="sub positive">+2.45%</span></td><td class="right">32.17%</td><td class="right positive">+2.10%p</td><td class="right positive">+497K</td></tr>
+</tbody></table></div>
+</div>
+</div>
+</div>
 
-<div class="section" id="sec-net">
-<input type="radio" name="np" id="n0" checked class="sr">
-<input type="radio" name="np" id="n1" class="sr">
-<input type="radio" name="np" id="n2" class="sr">
-<input type="radio" name="np" id="n3" class="sr">
-<input type="radio" name="np" id="n4" class="sr">
-<input type="radio" name="np" id="n5" class="sr">
-<input type="radio" name="np" id="n6" class="sr">
-<div class="tabs"><label for="n0" class="tab-btn">당일</label><label for="n1" class="tab-btn">전일</label><label for="n2" class="tab-btn">최근 3일</label><label for="n3" class="tab-btn">최근 1주일</label><label for="n4" class="tab-btn">최근 2주일</label><label for="n5" class="tab-btn">최근 1개월</label><label for="n6" class="tab-btn">최근 3개월</label></div>
-<div class="pp" id="n0v">
-<div class="summary"><div class="stat-card"><div class="label">1위 종목</div><div class="value accent">KODEX 레버리지</div></div><div class="stat-card"><div class="label">전체 합계</div><div class="value green">+5,322억</div></div><div class="stat-card"><div class="label">KOSPI</div><div class="value green">+3,062억</div></div><div class="stat-card"><div class="label">KOSDAQ</div><div class="value green">+2,260억</div></div></div>
+<div class="inv-sec" id="sec-i">
+<input type="radio" name="gm" id="gm-n" checked class="sr">
+<input type="radio" name="gm" id="gm-o" class="sr">
+<label for="gm-n" class="main-tab">순매수 금액 TOP 10</label><label for="gm-o" class="main-tab">순매수 수량 TOP 10</label>
+<div class="main-tab-line"></div>
+<div class="section" id="gm-n-s">
+<input type="radio" name="gn" id="gn0" checked class="sr">
+<input type="radio" name="gn" id="gn1" class="sr">
+<input type="radio" name="gn" id="gn2" class="sr">
+<input type="radio" name="gn" id="gn3" class="sr">
+<input type="radio" name="gn" id="gn4" class="sr">
+<input type="radio" name="gn" id="gn5" class="sr">
+<input type="radio" name="gn" id="gn6" class="sr">
+<div class="tabs"><label for="gn0" class="tab-btn">당일</label><label for="gn1" class="tab-btn">전일</label><label for="gn2" class="tab-btn">최근 3일</label><label for="gn3" class="tab-btn">최근 1주일</label><label for="gn4" class="tab-btn">최근 2주일</label><label for="gn5" class="tab-btn">최근 1개월</label><label for="gn6" class="tab-btn">최근 3개월</label></div>
+<div class="pp" id="gn0v">
+<div class="summary"><div class="stat-card"><div class="label">1위 종목</div><div class="value accent">삼성전자</div></div><div class="stat-card"><div class="label">전체 합계</div><div class="value green">+2,835억</div></div><div class="stat-card"><div class="label">KOSPI</div><div class="value green">+2,313억</div></div><div class="stat-card"><div class="label">KOSDAQ</div><div class="value green">+521.8억</div></div></div>
 <div class="table-wrap"><table>
 <thead><tr><th>#</th><th>종목명</th><th>시장</th><th>종가</th><th>순매수금액</th><th>순매수수량</th></tr></thead>
 <tbody>
-<tr><td>1</td><td>KODEX 레버리지 <span class="sub">122630</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">89,505원<br><span class="sub negative">-6.02%</span></td><td class="right positive">+476.0억</td><td class="right positive">+532K</td></tr>
-<tr><td>2</td><td>이수페타시스 <span class="sub">007660</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">129,500원<br><span class="sub positive">+3.52%</span></td><td class="right positive">+381.0억</td><td class="right positive">+296K</td></tr>
-<tr><td>3</td><td>두산에너빌리티 <span class="sub">034020</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">106,300원<br><span class="sub negative">-0.93%</span></td><td class="right positive">+335.6억</td><td class="right positive">+312K</td></tr>
-<tr><td>4</td><td>큐리옥스바이오시스템즈 <span class="sub">445680</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">131,700원<br><span class="sub negative">-5.66%</span></td><td class="right positive">+316.8억</td><td class="right positive">+226K</td></tr>
-<tr><td>5</td><td>메지온 <span class="sub">140410</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">91,500원<br><span class="sub positive">+13.81%</span></td><td class="right positive">+301.5억</td><td class="right positive">+364K</td></tr>
-<tr><td>6</td><td>KB금융 <span class="sub">105560</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">155,700원<br><span class="sub positive">+0.65%</span></td><td class="right positive">+225.7억</td><td class="right positive">+145K</td></tr>
-<tr><td>7</td><td>KODEX 200선물인버스2X <span class="sub">252670</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">249원<br><span class="sub positive">+6.87%</span></td><td class="right positive">+213.1억</td><td class="right positive">+86.5M</td></tr>
-<tr><td>8</td><td>파두 <span class="sub">440110</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">57,000원<br><span class="sub negative">-8.80%</span></td><td class="right positive">+190.6억</td><td class="right positive">+333K</td></tr>
-<tr><td>9</td><td>HPSP <span class="sub">403870</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">51,700원<br><span class="sub positive">+3.40%</span></td><td class="right positive">+176.6억</td><td class="right positive">+341K</td></tr>
-<tr><td>10</td><td>신한지주 <span class="sub">055550</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">96,500원<br><span class="sub positive">+1.58%</span></td><td class="right positive">+160.5억</td><td class="right positive">+169K</td></tr>
-</tbody>
-</table></div>
+<tr><td>1</td><td>삼성전자 <span class="sub">005930</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">199,500원<br><span class="sub negative">-0.50%</span></td><td class="right positive">+684.3억</td><td class="right positive">+343K</td></tr>
+<tr><td>2</td><td>두산에너빌리티 <span class="sub">034020</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">109,700원<br><span class="sub positive">+3.20%</span></td><td class="right positive">+158.1억</td><td class="right positive">+144K</td></tr>
+<tr><td>3</td><td>KB금융 <span class="sub">105560</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">155,600원<br><span class="sub negative">-0.06%</span></td><td class="right positive">+150.9억</td><td class="right positive">+97K</td></tr>
+<tr><td>4</td><td>한화솔루션 <span class="sub">009830</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">52,700원<br><span class="sub positive">+5.93%</span></td><td class="right positive">+120.0억</td><td class="right positive">+229K</td></tr>
+<tr><td>5</td><td>SK스퀘어 <span class="sub">402340</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">599,000원<br><span class="sub negative">-1.96%</span></td><td class="right positive">+107.6억</td><td class="right positive">+18K</td></tr>
+<tr><td>6</td><td>삼성E&A <span class="sub">028050</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">35,050원<br><span class="sub positive">+7.52%</span></td><td class="right positive">+96.0억</td><td class="right positive">+274K</td></tr>
+<tr><td>7</td><td>삼성물산 <span class="sub">028260</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">300,000원<br><span class="sub positive">+3.09%</span></td><td class="right positive">+93.2억</td><td class="right positive">+31K</td></tr>
+<tr><td>8</td><td>SK하이닉스 <span class="sub">000660</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">1,006,000원<br><span class="sub negative">-0.69%</span></td><td class="right positive">+90.5억</td><td class="right positive">+9K</td></tr>
+<tr><td>9</td><td>미래에셋증권 <span class="sub">006800</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">68,000원<br><span class="sub positive">+1.95%</span></td><td class="right positive">+67.2억</td><td class="right positive">+99K</td></tr>
+<tr><td>10</td><td>GS건설 <span class="sub">006360</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">32,175원<br><span class="sub positive">+23.99%</span></td><td class="right positive">+51.9억</td><td class="right positive">+162K</td></tr>
+</tbody></table></div>
 </div>
-<div class="pp" id="n1v">
-<div class="summary"><div class="stat-card"><div class="label">1위 종목</div><div class="value accent">SK하이닉스</div></div><div class="stat-card"><div class="label">전체 합계</div><div class="value green">+21,309억</div></div><div class="stat-card"><div class="label">KOSPI</div><div class="value green">+15,179억</div></div><div class="stat-card"><div class="label">KOSDAQ</div><div class="value green">+6,130억</div></div></div>
+<div class="pp" id="gn1v">
+<div class="summary"><div class="stat-card"><div class="label">1위 종목</div><div class="value accent">한미반도체</div></div><div class="stat-card"><div class="label">전체 합계</div><div class="value red">-4,685억</div></div><div class="stat-card"><div class="label">KOSPI</div><div class="value red">-3,989억</div></div><div class="stat-card"><div class="label">KOSDAQ</div><div class="value red">-696.3억</div></div></div>
 <div class="table-wrap"><table>
 <thead><tr><th>#</th><th>종목명</th><th>시장</th><th>종가</th><th>순매수금액</th><th>순매수수량</th></tr></thead>
 <tbody>
-<tr><td>1</td><td>SK하이닉스 <span class="sub">000660</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">1,013,000원<br><span class="sub negative">-4.07%</span></td><td class="right positive">+5,897억</td><td class="right positive">+579K</td></tr>
-<tr><td>2</td><td>삼성전자 <span class="sub">005930</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">200,500원<br><span class="sub negative">-3.84%</span></td><td class="right positive">+2,802억</td><td class="right positive">+1.4M</td></tr>
-<tr><td>3</td><td>우리기술 <span class="sub">032820</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">28,950원<br><span class="sub negative">-1.19%</span></td><td class="right positive">+2,223억</td><td class="right positive">+8.4M</td></tr>
-<tr><td>4</td><td>두산에너빌리티 <span class="sub">034020</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">106,300원<br><span class="sub negative">-0.93%</span></td><td class="right positive">+1,294억</td><td class="right positive">+1.2M</td></tr>
-<tr><td>5</td><td>이수페타시스 <span class="sub">007660</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">129,500원<br><span class="sub positive">+3.52%</span></td><td class="right positive">+847.6억</td><td class="right positive">+686K</td></tr>
-<tr><td>6</td><td>HPSP <span class="sub">403870</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">51,700원<br><span class="sub positive">+3.40%</span></td><td class="right positive">+625.8억</td><td class="right positive">+1.3M</td></tr>
-<tr><td>7</td><td>알지노믹스 <span class="sub">476830</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">214,000원<br><span class="sub positive">+9.41%</span></td><td class="right positive">+513.8억</td><td class="right positive">+266K</td></tr>
-<tr><td>8</td><td>삼성전자우 <span class="sub">005935</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">144,200원<br><span class="sub negative">-3.29%</span></td><td class="right positive">+499.3억</td><td class="right positive">+335K</td></tr>
-<tr><td>9</td><td>효성중공업 <span class="sub">298040</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">2,693,000원<br><span class="sub negative">-1.39%</span></td><td class="right positive">+443.4억</td><td class="right positive">+16K</td></tr>
-<tr><td>10</td><td>LS ELECTRIC <span class="sub">010120</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">873,000원<br><span class="sub positive">+4.80%</span></td><td class="right positive">+432.7억</td><td class="right positive">+53K</td></tr>
-</tbody>
-</table></div>
+<tr><td>1</td><td>한미반도체 <span class="sub">042700</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">308,500원<br><span class="sub positive">+0.49%</span></td><td class="right positive">+383.6억</td><td class="right positive">+126K</td></tr>
+<tr><td>2</td><td>삼성전자우 <span class="sub">005935</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">140,200원<br><span class="sub negative">-2.77%</span></td><td class="right positive">+254.2억</td><td class="right positive">+176K</td></tr>
+<tr><td>3</td><td>피에스케이 <span class="sub">319660</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">83,900원<br><span class="sub positive">+1.70%</span></td><td class="right positive">+128.8억</td><td class="right positive">+158K</td></tr>
+<tr><td>4</td><td>대덕전자 <span class="sub">353200</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">83,100원<br><span class="sub positive">+7.50%</span></td><td class="right positive">+118.3억</td><td class="right positive">+152K</td></tr>
+<tr><td>5</td><td>원익IPS <span class="sub">240810</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">124,700원<br><span class="sub positive">+3.14%</span></td><td class="right positive">+105.6억</td><td class="right positive">+87K</td></tr>
+<tr><td>6</td><td>LIG넥스원 <span class="sub">079550</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">665,000원<br><span class="sub negative">-5.27%</span></td><td class="right positive">+96.2억</td><td class="right positive">+14K</td></tr>
+<tr><td>7</td><td>에이피알 <span class="sub">278470</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">361,500원<br><span class="sub negative">-2.03%</span></td><td class="right positive">+83.0억</td><td class="right positive">+22K</td></tr>
+<tr><td>8</td><td>현대건설 <span class="sub">000720</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">168,400원<br><span class="sub negative">-0.65%</span></td><td class="right positive">+80.3억</td><td class="right positive">+47K</td></tr>
+<tr><td>9</td><td>HD현대에너지솔루션 <span class="sub">322000</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">135,800원<br><span class="sub negative">-0.37%</span></td><td class="right positive">+77.0억</td><td class="right positive">+56K</td></tr>
+<tr><td>10</td><td>RF머트리얼즈 <span class="sub">327260</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">74,200원<br><span class="sub positive">+22.64%</span></td><td class="right positive">+73.4억</td><td class="right positive">+119K</td></tr>
+</tbody></table></div>
 </div>
-<div class="pp" id="n2v">
-<div class="summary"><div class="stat-card"><div class="label">1위 종목</div><div class="value accent">이수페타시스</div></div><div class="stat-card"><div class="label">전체 합계</div><div class="value green">+12,131억</div></div><div class="stat-card"><div class="label">KOSPI</div><div class="value green">+5,101억</div></div><div class="stat-card"><div class="label">KOSDAQ</div><div class="value green">+7,031억</div></div></div>
+<div class="pp" id="gn2v">
+<div class="summary"><div class="stat-card"><div class="label">1위 종목</div><div class="value accent">SK하이닉스</div></div><div class="stat-card"><div class="label">전체 합계</div><div class="value green">+18,457억</div></div><div class="stat-card"><div class="label">KOSPI</div><div class="value green">+19,238억</div></div><div class="stat-card"><div class="label">KOSDAQ</div><div class="value red">-780.9억</div></div></div>
 <div class="table-wrap"><table>
 <thead><tr><th>#</th><th>종목명</th><th>시장</th><th>종가</th><th>순매수금액</th><th>순매수수량</th></tr></thead>
 <tbody>
-<tr><td>1</td><td>이수페타시스 <span class="sub">007660</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">129,500원<br><span class="sub positive">+3.52%</span></td><td class="right positive">+1,640억</td><td class="right positive">+1.3M</td></tr>
-<tr><td>2</td><td>두산에너빌리티 <span class="sub">034020</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">106,300원<br><span class="sub negative">-0.93%</span></td><td class="right positive">+1,221억</td><td class="right positive">+1.1M</td></tr>
-<tr><td>3</td><td>HPSP <span class="sub">403870</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">51,700원<br><span class="sub positive">+3.40%</span></td><td class="right positive">+1,005억</td><td class="right positive">+2.1M</td></tr>
-<tr><td>4</td><td>KODEX 레버리지 <span class="sub">122630</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">89,505원<br><span class="sub negative">-6.02%</span></td><td class="right positive">+743.4억</td><td class="right positive">+839K</td></tr>
-<tr><td>5</td><td>LS ELECTRIC <span class="sub">010120</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">873,000원<br><span class="sub positive">+4.80%</span></td><td class="right positive">+716.0억</td><td class="right positive">+88K</td></tr>
-<tr><td>6</td><td>큐리옥스바이오시스템즈 <span class="sub">445680</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">131,700원<br><span class="sub negative">-5.66%</span></td><td class="right positive">+704.4억</td><td class="right positive">+522K</td></tr>
-<tr><td>7</td><td>알지노믹스 <span class="sub">476830</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">214,000원<br><span class="sub positive">+9.41%</span></td><td class="right positive">+645.4억</td><td class="right positive">+325K</td></tr>
-<tr><td>8</td><td>메지온 <span class="sub">140410</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">91,500원<br><span class="sub positive">+13.81%</span></td><td class="right positive">+606.1억</td><td class="right positive">+676K</td></tr>
-<tr><td>9</td><td>효성중공업 <span class="sub">298040</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">2,693,000원<br><span class="sub negative">-1.39%</span></td><td class="right positive">+521.5억</td><td class="right positive">+19K</td></tr>
-<tr><td>10</td><td>레인보우로보틱스 <span class="sub">277810</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">718,000원<br><span class="sub negative">-2.97%</span></td><td class="right positive">+472.2억</td><td class="right positive">+65K</td></tr>
-</tbody>
-</table></div>
+<tr><td>1</td><td>SK하이닉스 <span class="sub">000660</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">1,006,000원<br><span class="sub negative">-0.69%</span></td><td class="right positive">+7,297억</td><td class="right positive">+717K</td></tr>
+<tr><td>2</td><td>삼성전자 <span class="sub">005930</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">199,500원<br><span class="sub negative">-0.50%</span></td><td class="right positive">+6,784억</td><td class="right positive">+3.3M</td></tr>
+<tr><td>3</td><td>SK스퀘어 <span class="sub">402340</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">599,000원<br><span class="sub negative">-1.96%</span></td><td class="right positive">+844.5억</td><td class="right positive">+136K</td></tr>
+<tr><td>4</td><td>삼성전자우 <span class="sub">005935</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">140,200원<br><span class="sub negative">-2.77%</span></td><td class="right positive">+676.4억</td><td class="right positive">+464K</td></tr>
+<tr><td>5</td><td>두산에너빌리티 <span class="sub">034020</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">109,700원<br><span class="sub positive">+3.20%</span></td><td class="right positive">+514.1억</td><td class="right positive">+476K</td></tr>
+<tr><td>6</td><td>삼성물산 <span class="sub">028260</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">300,000원<br><span class="sub positive">+3.09%</span></td><td class="right positive">+453.1억</td><td class="right positive">+151K</td></tr>
+<tr><td>7</td><td>KB금융 <span class="sub">105560</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">155,600원<br><span class="sub negative">-0.06%</span></td><td class="right positive">+384.0억</td><td class="right positive">+249K</td></tr>
+<tr><td>8</td><td>삼성생명 <span class="sub">032830</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">226,500원<br><span class="sub negative">-1.74%</span></td><td class="right positive">+370.2억</td><td class="right positive">+154K</td></tr>
+<tr><td>9</td><td>한화솔루션 <span class="sub">009830</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">52,700원<br><span class="sub positive">+5.93%</span></td><td class="right positive">+293.7억</td><td class="right positive">+579K</td></tr>
+<tr><td>10</td><td>현대건설 <span class="sub">000720</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">168,400원<br><span class="sub negative">-0.65%</span></td><td class="right positive">+269.9억</td><td class="right positive">+161K</td></tr>
+</tbody></table></div>
 </div>
-<div class="pp" id="n3v">
-<div class="summary"><div class="stat-card"><div class="label">1위 종목</div><div class="value accent">두산에너빌리티</div></div><div class="stat-card"><div class="label">전체 합계</div><div class="value green">+6,855억</div></div><div class="stat-card"><div class="label">KOSPI</div><div class="value green">+213.0억</div></div><div class="stat-card"><div class="label">KOSDAQ</div><div class="value green">+6,642억</div></div></div>
+<div class="pp" id="gn3v">
+<div class="summary"><div class="stat-card"><div class="label">1위 종목</div><div class="value accent">삼성전자</div></div><div class="stat-card"><div class="label">전체 합계</div><div class="value green">+25,655억</div></div><div class="stat-card"><div class="label">KOSPI</div><div class="value green">+26,587억</div></div><div class="stat-card"><div class="label">KOSDAQ</div><div class="value red">-932.7억</div></div></div>
 <div class="table-wrap"><table>
 <thead><tr><th>#</th><th>종목명</th><th>시장</th><th>종가</th><th>순매수금액</th><th>순매수수량</th></tr></thead>
 <tbody>
-<tr><td>1</td><td>두산에너빌리티 <span class="sub">034020</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">106,300원<br><span class="sub negative">-0.93%</span></td><td class="right positive">+1,657억</td><td class="right positive">+1.5M</td></tr>
-<tr><td>2</td><td>이수페타시스 <span class="sub">007660</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">129,500원<br><span class="sub positive">+3.52%</span></td><td class="right positive">+1,514억</td><td class="right positive">+1.2M</td></tr>
-<tr><td>3</td><td>KODEX 레버리지 <span class="sub">122630</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">89,505원<br><span class="sub negative">-6.02%</span></td><td class="right positive">+1,366억</td><td class="right positive">+1.6M</td></tr>
-<tr><td>4</td><td>HPSP <span class="sub">403870</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">51,700원<br><span class="sub positive">+3.40%</span></td><td class="right positive">+959.7억</td><td class="right positive">+1.9M</td></tr>
-<tr><td>5</td><td>큐리옥스바이오시스템즈 <span class="sub">445680</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">131,700원<br><span class="sub negative">-5.66%</span></td><td class="right positive">+734.9억</td><td class="right positive">+555K</td></tr>
-<tr><td>6</td><td>알지노믹스 <span class="sub">476830</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">214,000원<br><span class="sub positive">+9.41%</span></td><td class="right positive">+723.6억</td><td class="right positive">+366K</td></tr>
-<tr><td>7</td><td>효성중공업 <span class="sub">298040</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">2,693,000원<br><span class="sub negative">-1.39%</span></td><td class="right positive">+678.1억</td><td class="right positive">+25K</td></tr>
-<tr><td>8</td><td>SK하이닉스 <span class="sub">000660</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">1,013,000원<br><span class="sub negative">-4.07%</span></td><td class="right positive">+655.4억</td><td class="right positive">+23K</td></tr>
-<tr><td>9</td><td>LS ELECTRIC <span class="sub">010120</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">873,000원<br><span class="sub positive">+4.80%</span></td><td class="right positive">+637.7억</td><td class="right positive">+77K</td></tr>
-<tr><td>10</td><td>메지온 <span class="sub">140410</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">91,500원<br><span class="sub positive">+13.81%</span></td><td class="right positive">+613.0억</td><td class="right positive">+680K</td></tr>
-</tbody>
-</table></div>
+<tr><td>1</td><td>삼성전자 <span class="sub">005930</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">199,500원<br><span class="sub negative">-0.50%</span></td><td class="right positive">+11,611억</td><td class="right positive">+5.8M</td></tr>
+<tr><td>2</td><td>SK하이닉스 <span class="sub">000660</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">1,006,000원<br><span class="sub negative">-0.69%</span></td><td class="right positive">+9,686억</td><td class="right positive">+964K</td></tr>
+<tr><td>3</td><td>SK스퀘어 <span class="sub">402340</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">599,000원<br><span class="sub negative">-1.96%</span></td><td class="right positive">+1,874억</td><td class="right positive">+312K</td></tr>
+<tr><td>4</td><td>삼성전자우 <span class="sub">005935</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">140,200원<br><span class="sub negative">-2.77%</span></td><td class="right positive">+871.4억</td><td class="right positive">+603K</td></tr>
+<tr><td>5</td><td>KB금융 <span class="sub">105560</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">155,600원<br><span class="sub negative">-0.06%</span></td><td class="right positive">+544.4억</td><td class="right positive">+354K</td></tr>
+<tr><td>6</td><td>삼성물산 <span class="sub">028260</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">300,000원<br><span class="sub positive">+3.09%</span></td><td class="right positive">+501.0억</td><td class="right positive">+167K</td></tr>
+<tr><td>7</td><td>대덕전자 <span class="sub">353200</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">83,100원<br><span class="sub positive">+7.50%</span></td><td class="right positive">+490.9억</td><td class="right positive">+694K</td></tr>
+<tr><td>8</td><td>두산에너빌리티 <span class="sub">034020</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">109,700원<br><span class="sub positive">+3.20%</span></td><td class="right positive">+398.6억</td><td class="right positive">+361K</td></tr>
+<tr><td>9</td><td>피에스케이 <span class="sub">319660</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">83,900원<br><span class="sub positive">+1.70%</span></td><td class="right positive">+357.3억</td><td class="right positive">+468K</td></tr>
+<tr><td>10</td><td>대한항공 <span class="sub">003490</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">26,050원<br><span class="sub positive">+6.11%</span></td><td class="right positive">+346.1억</td><td class="right positive">+1.4M</td></tr>
+</tbody></table></div>
 </div>
-<div class="pp" id="n4v">
-<div class="summary"><div class="stat-card"><div class="label">1위 종목</div><div class="value accent">두산에너빌리티</div></div><div class="stat-card"><div class="label">전체 합계</div><div class="value red">-49,934억</div></div><div class="stat-card"><div class="label">KOSPI</div><div class="value red">-47,884억</div></div><div class="stat-card"><div class="label">KOSDAQ</div><div class="value red">-2,050억</div></div></div>
+<div class="pp" id="gn4v">
+<div class="summary"><div class="stat-card"><div class="label">1위 종목</div><div class="value accent">SK하이닉스</div></div><div class="stat-card"><div class="label">전체 합계</div><div class="value green">+22,966억</div></div><div class="stat-card"><div class="label">KOSPI</div><div class="value green">+21,390억</div></div><div class="stat-card"><div class="label">KOSDAQ</div><div class="value green">+1,576억</div></div></div>
 <div class="table-wrap"><table>
 <thead><tr><th>#</th><th>종목명</th><th>시장</th><th>종가</th><th>순매수금액</th><th>순매수수량</th></tr></thead>
 <tbody>
-<tr><td>1</td><td>두산에너빌리티 <span class="sub">034020</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">106,300원<br><span class="sub negative">-0.93%</span></td><td class="right positive">+3,787억</td><td class="right positive">+3.5M</td></tr>
-<tr><td>2</td><td>KODEX 레버리지 <span class="sub">122630</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">89,505원<br><span class="sub negative">-6.02%</span></td><td class="right positive">+2,019억</td><td class="right positive">+2.4M</td></tr>
-<tr><td>3</td><td>HD현대중공업 <span class="sub">329180</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">567,000원<br><span class="sub negative">-3.90%</span></td><td class="right positive">+1,030억</td><td class="right positive">+177K</td></tr>
-<tr><td>4</td><td>이수페타시스 <span class="sub">007660</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">129,500원<br><span class="sub positive">+3.52%</span></td><td class="right positive">+872.7억</td><td class="right positive">+619K</td></tr>
-<tr><td>5</td><td>효성중공업 <span class="sub">298040</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">2,693,000원<br><span class="sub negative">-1.39%</span></td><td class="right positive">+831.6억</td><td class="right positive">+31K</td></tr>
-<tr><td>6</td><td>알지노믹스 <span class="sub">476830</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">214,000원<br><span class="sub positive">+9.41%</span></td><td class="right positive">+785.6억</td><td class="right positive">+402K</td></tr>
-<tr><td>7</td><td>큐리옥스바이오시스템즈 <span class="sub">445680</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">131,700원<br><span class="sub negative">-5.66%</span></td><td class="right positive">+735.8억</td><td class="right positive">+556K</td></tr>
-<tr><td>8</td><td>LS ELECTRIC <span class="sub">010120</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">873,000원<br><span class="sub positive">+4.80%</span></td><td class="right positive">+684.1억</td><td class="right positive">+84K</td></tr>
-<tr><td>9</td><td>HJ중공업 <span class="sub">097230</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">27,800원<br><span class="sub positive">+0.72%</span></td><td class="right positive">+660.1억</td><td class="right positive">+2.5M</td></tr>
-<tr><td>10</td><td>메지온 <span class="sub">140410</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">91,500원<br><span class="sub positive">+13.81%</span></td><td class="right positive">+559.1억</td><td class="right positive">+637K</td></tr>
-</tbody>
-</table></div>
+<tr><td>1</td><td>SK하이닉스 <span class="sub">000660</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">1,006,000원<br><span class="sub negative">-0.69%</span></td><td class="right positive">+7,432억</td><td class="right positive">+673K</td></tr>
+<tr><td>2</td><td>삼성전자 <span class="sub">005930</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">199,500원<br><span class="sub negative">-0.50%</span></td><td class="right positive">+6,009억</td><td class="right positive">+2.5M</td></tr>
+<tr><td>3</td><td>두산에너빌리티 <span class="sub">034020</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">109,700원<br><span class="sub positive">+3.20%</span></td><td class="right positive">+2,756억</td><td class="right positive">+2.6M</td></tr>
+<tr><td>4</td><td>삼성전자우 <span class="sub">005935</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">140,200원<br><span class="sub negative">-2.77%</span></td><td class="right positive">+1,981억</td><td class="right positive">+1.5M</td></tr>
+<tr><td>5</td><td>SK스퀘어 <span class="sub">402340</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">599,000원<br><span class="sub negative">-1.96%</span></td><td class="right positive">+1,671억</td><td class="right positive">+255K</td></tr>
+<tr><td>6</td><td>KB금융 <span class="sub">105560</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">155,600원<br><span class="sub negative">-0.06%</span></td><td class="right positive">+1,145억</td><td class="right positive">+747K</td></tr>
+<tr><td>7</td><td>포스코인터내셔널 <span class="sub">047050</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">75,800원<br><span class="sub positive">+5.57%</span></td><td class="right positive">+872.0억</td><td class="right positive">+1.1M</td></tr>
+<tr><td>8</td><td>한화솔루션 <span class="sub">009830</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">52,700원<br><span class="sub positive">+5.93%</span></td><td class="right positive">+794.5억</td><td class="right positive">+1.5M</td></tr>
+<tr><td>9</td><td>대덕전자 <span class="sub">353200</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">83,100원<br><span class="sub positive">+7.50%</span></td><td class="right positive">+760.9억</td><td class="right positive">+1.1M</td></tr>
+<tr><td>10</td><td>한미반도체 <span class="sub">042700</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">308,500원<br><span class="sub positive">+0.49%</span></td><td class="right positive">+733.1억</td><td class="right positive">+233K</td></tr>
+</tbody></table></div>
 </div>
-<div class="pp" id="n5v">
-<div class="summary"><div class="stat-card"><div class="label">1위 종목</div><div class="value accent">두산에너빌리티</div></div><div class="stat-card"><div class="label">전체 합계</div><div class="value red">-252,304억</div></div><div class="stat-card"><div class="label">KOSPI</div><div class="value red">-263,809억</div></div><div class="stat-card"><div class="label">KOSDAQ</div><div class="value green">+11,505억</div></div></div>
+<div class="pp" id="gn5v">
+<div class="summary"><div class="stat-card"><div class="label">1위 종목</div><div class="value accent">삼성전자</div></div><div class="stat-card"><div class="label">전체 합계</div><div class="value green">+73,867억</div></div><div class="stat-card"><div class="label">KOSPI</div><div class="value green">+61,925억</div></div><div class="stat-card"><div class="label">KOSDAQ</div><div class="value green">+11,942억</div></div></div>
 <div class="table-wrap"><table>
 <thead><tr><th>#</th><th>종목명</th><th>시장</th><th>종가</th><th>순매수금액</th><th>순매수수량</th></tr></thead>
 <tbody>
-<tr><td>1</td><td>두산에너빌리티 <span class="sub">034020</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">106,300원<br><span class="sub negative">-0.93%</span></td><td class="right positive">+7,110억</td><td class="right positive">+6.7M</td></tr>
-<tr><td>2</td><td>HD현대중공업 <span class="sub">329180</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">567,000원<br><span class="sub negative">-3.90%</span></td><td class="right positive">+3,590억</td><td class="right positive">+617K</td></tr>
-<tr><td>3</td><td>효성중공업 <span class="sub">298040</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">2,693,000원<br><span class="sub negative">-1.39%</span></td><td class="right positive">+2,711억</td><td class="right positive">+104K</td></tr>
-<tr><td>4</td><td>삼성SDI <span class="sub">006400</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">402,500원<br><span class="sub negative">-0.62%</span></td><td class="right positive">+2,660억</td><td class="right positive">+616K</td></tr>
-<tr><td>5</td><td>HPSP <span class="sub">403870</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">51,700원<br><span class="sub positive">+3.40%</span></td><td class="right positive">+2,384억</td><td class="right positive">+5.4M</td></tr>
-<tr><td>6</td><td>현대건설 <span class="sub">000720</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">169,500원<br><span class="sub negative">-0.35%</span></td><td class="right positive">+2,074억</td><td class="right positive">+1.4M</td></tr>
-<tr><td>7</td><td>알테오젠 <span class="sub">196170</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">360,000원<br><span class="sub positive">+1.41%</span></td><td class="right positive">+1,766억</td><td class="right positive">+454K</td></tr>
-<tr><td>8</td><td>LG이노텍 <span class="sub">011070</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">286,000원<br><span class="sub positive">+6.52%</span></td><td class="right positive">+1,631억</td><td class="right positive">+550K</td></tr>
-<tr><td>9</td><td>LG전자 <span class="sub">066570</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">116,200원<br><span class="sub negative">-3.17%</span></td><td class="right positive">+1,556억</td><td class="right positive">+1.3M</td></tr>
-<tr><td>10</td><td>삼천당제약 <span class="sub">000250</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">795,000원<br><span class="sub positive">+1.40%</span></td><td class="right positive">+1,342억</td><td class="right positive">+181K</td></tr>
-</tbody>
-</table></div>
+<tr><td>1</td><td>삼성전자 <span class="sub">005930</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">199,500원<br><span class="sub negative">-0.50%</span></td><td class="right positive">+27,067억</td><td class="right positive">+12.8M</td></tr>
+<tr><td>2</td><td>SK하이닉스 <span class="sub">000660</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">1,006,000원<br><span class="sub negative">-0.69%</span></td><td class="right positive">+18,383억</td><td class="right positive">+1.8M</td></tr>
+<tr><td>3</td><td>한미반도체 <span class="sub">042700</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">308,500원<br><span class="sub positive">+0.49%</span></td><td class="right positive">+4,884억</td><td class="right positive">+1.5M</td></tr>
+<tr><td>4</td><td>삼성전자우 <span class="sub">005935</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">140,200원<br><span class="sub negative">-2.77%</span></td><td class="right positive">+4,318억</td><td class="right positive">+3.1M</td></tr>
+<tr><td>5</td><td>KB금융 <span class="sub">105560</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">155,600원<br><span class="sub negative">-0.06%</span></td><td class="right positive">+2,997억</td><td class="right positive">+1.9M</td></tr>
+<tr><td>6</td><td>원익IPS <span class="sub">240810</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">124,700원<br><span class="sub positive">+3.14%</span></td><td class="right positive">+1,940억</td><td class="right positive">+1.5M</td></tr>
+<tr><td>7</td><td>두산에너빌리티 <span class="sub">034020</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">109,700원<br><span class="sub positive">+3.20%</span></td><td class="right positive">+1,909억</td><td class="right positive">+1.6M</td></tr>
+<tr><td>8</td><td>포스코인터내셔널 <span class="sub">047050</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">75,800원<br><span class="sub positive">+5.57%</span></td><td class="right positive">+1,678억</td><td class="right positive">+2.2M</td></tr>
+<tr><td>9</td><td>LIG넥스원 <span class="sub">079550</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">665,000원<br><span class="sub negative">-5.27%</span></td><td class="right positive">+1,623억</td><td class="right positive">+257K</td></tr>
+<tr><td>10</td><td>SK스퀘어 <span class="sub">402340</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">599,000원<br><span class="sub negative">-1.96%</span></td><td class="right positive">+1,573억</td><td class="right positive">+220K</td></tr>
+</tbody></table></div>
 </div>
-<div class="pp" id="n6v">
-<div class="summary"><div class="stat-card"><div class="label">1위 종목</div><div class="value accent">두산에너빌리티</div></div><div class="stat-card"><div class="label">전체 합계</div><div class="value red">-317,768억</div></div><div class="stat-card"><div class="label">KOSPI</div><div class="value red">-328,763억</div></div><div class="stat-card"><div class="label">KOSDAQ</div><div class="value green">+10,995억</div></div></div>
+<div class="pp" id="gn6v">
+<div class="summary"><div class="stat-card"><div class="label">1위 종목</div><div class="value accent">삼성전자</div></div><div class="stat-card"><div class="label">전체 합계</div><div class="value green">+130,728억</div></div><div class="stat-card"><div class="label">KOSPI</div><div class="value green">+120,073억</div></div><div class="stat-card"><div class="label">KOSDAQ</div><div class="value green">+10,655억</div></div></div>
 <div class="table-wrap"><table>
 <thead><tr><th>#</th><th>종목명</th><th>시장</th><th>종가</th><th>순매수금액</th><th>순매수수량</th></tr></thead>
 <tbody>
-<tr><td>1</td><td>두산에너빌리티 <span class="sub">034020</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">106,300원<br><span class="sub negative">-0.93%</span></td><td class="right positive">+14,767억</td><td class="right positive">+14.5M</td></tr>
-<tr><td>2</td><td>HD현대중공업 <span class="sub">329180</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">567,000원<br><span class="sub negative">-3.90%</span></td><td class="right positive">+6,344억</td><td class="right positive">+1.0M</td></tr>
-<tr><td>3</td><td>효성중공업 <span class="sub">298040</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">2,693,000원<br><span class="sub negative">-1.39%</span></td><td class="right positive">+5,849억</td><td class="right positive">+253K</td></tr>
-<tr><td>4</td><td>현대건설 <span class="sub">000720</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">169,500원<br><span class="sub negative">-0.35%</span></td><td class="right positive">+5,168억</td><td class="right positive">+4.8M</td></tr>
-<tr><td>5</td><td>삼천당제약 <span class="sub">000250</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">795,000원<br><span class="sub positive">+1.40%</span></td><td class="right positive">+3,810억</td><td class="right positive">+677K</td></tr>
-<tr><td>6</td><td>삼성SDI <span class="sub">006400</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">402,500원<br><span class="sub negative">-0.62%</span></td><td class="right positive">+3,642억</td><td class="right positive">+900K</td></tr>
-<tr><td>7</td><td>HPSP <span class="sub">403870</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">51,700원<br><span class="sub positive">+3.40%</span></td><td class="right positive">+3,502억</td><td class="right positive">+8.9M</td></tr>
-<tr><td>8</td><td>레인보우로보틱스 <span class="sub">277810</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">718,000원<br><span class="sub negative">-2.97%</span></td><td class="right positive">+3,322억</td><td class="right positive">+545K</td></tr>
-<tr><td>9</td><td>신한지주 <span class="sub">055550</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">96,500원<br><span class="sub positive">+1.58%</span></td><td class="right positive">+3,231억</td><td class="right positive">+4.1M</td></tr>
-<tr><td>10</td><td>에코프로 <span class="sub">086520</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">151,100원<br><span class="sub negative">-1.88%</span></td><td class="right positive">+2,934억</td><td class="right positive">+792K</td></tr>
-</tbody>
-</table></div>
+<tr><td>1</td><td>삼성전자 <span class="sub">005930</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">199,500원<br><span class="sub negative">-0.50%</span></td><td class="right positive">+44,201억</td><td class="right positive">+23.1M</td></tr>
+<tr><td>2</td><td>SK하이닉스 <span class="sub">000660</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">1,006,000원<br><span class="sub negative">-0.69%</span></td><td class="right positive">+37,402억</td><td class="right positive">+3.9M</td></tr>
+<tr><td>3</td><td>한미반도체 <span class="sub">042700</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">308,500원<br><span class="sub positive">+0.49%</span></td><td class="right positive">+6,494억</td><td class="right positive">+2.3M</td></tr>
+<tr><td>4</td><td>삼성전자우 <span class="sub">005935</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">140,200원<br><span class="sub negative">-2.77%</span></td><td class="right positive">+5,786억</td><td class="right positive">+4.4M</td></tr>
+<tr><td>5</td><td>KB금융 <span class="sub">105560</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">155,600원<br><span class="sub negative">-0.06%</span></td><td class="right positive">+5,305억</td><td class="right positive">+3.3M</td></tr>
+<tr><td>6</td><td>SK스퀘어 <span class="sub">402340</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">599,000원<br><span class="sub negative">-1.96%</span></td><td class="right positive">+5,172억</td><td class="right positive">+870K</td></tr>
+<tr><td>7</td><td>두산에너빌리티 <span class="sub">034020</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">109,700원<br><span class="sub positive">+3.20%</span></td><td class="right positive">+4,028억</td><td class="right positive">+3.8M</td></tr>
+<tr><td>8</td><td>삼성SDI <span class="sub">006400</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">400,500원<br><span class="sub negative">-0.50%</span></td><td class="right positive">+2,456억</td><td class="right positive">+561K</td></tr>
+<tr><td>9</td><td>원익IPS <span class="sub">240810</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">124,700원<br><span class="sub positive">+3.14%</span></td><td class="right positive">+2,299억</td><td class="right positive">+1.8M</td></tr>
+<tr><td>10</td><td>대주전자재료 <span class="sub">078600</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">129,200원<br><span class="sub positive">+7.94%</span></td><td class="right positive">+2,063억</td><td class="right positive">+2.0M</td></tr>
+</tbody></table></div>
 </div>
 </div>
-
-<div class="section" id="sec-own">
-<input type="radio" name="op" id="o0" checked class="sr">
-<input type="radio" name="op" id="o1" class="sr">
-<input type="radio" name="op" id="o2" class="sr">
-<input type="radio" name="op" id="o3" class="sr">
-<input type="radio" name="op" id="o4" class="sr">
-<input type="radio" name="op" id="o5" class="sr">
-<input type="radio" name="op" id="o6" class="sr">
-<div class="tabs"><label for="o0" class="tab-btn">당일</label><label for="o1" class="tab-btn">전일</label><label for="o2" class="tab-btn">최근 3일</label><label for="o3" class="tab-btn">최근 1주일</label><label for="o4" class="tab-btn">최근 2주일</label><label for="o5" class="tab-btn">최근 1개월</label><label for="o6" class="tab-btn">최근 3개월</label></div>
-<div class="pp" id="o0v">
-<div class="summary"><div class="stat-card"><div class="label">1위 종목</div><div class="value accent">KODEX 200선물인버스2X</div></div><div class="stat-card"><div class="label">최대 증가</div><div class="value green">+1.73%p</div></div><div class="stat-card"><div class="label">평균 증가</div><div class="value green">+0.11%p</div></div><div class="stat-card"><div class="label">종목 수</div><div class="value amber">66</div></div></div>
+<div class="section" id="gm-o-s">
+<input type="radio" name="go" id="go0" checked class="sr">
+<input type="radio" name="go" id="go1" class="sr">
+<input type="radio" name="go" id="go2" class="sr">
+<input type="radio" name="go" id="go3" class="sr">
+<input type="radio" name="go" id="go4" class="sr">
+<input type="radio" name="go" id="go5" class="sr">
+<input type="radio" name="go" id="go6" class="sr">
+<div class="tabs"><label for="go0" class="tab-btn">당일</label><label for="go1" class="tab-btn">전일</label><label for="go2" class="tab-btn">최근 3일</label><label for="go3" class="tab-btn">최근 1주일</label><label for="go4" class="tab-btn">최근 2주일</label><label for="go5" class="tab-btn">최근 1개월</label><label for="go6" class="tab-btn">최근 3개월</label></div>
+<div class="pp" id="go0v">
+<div class="summary"><div class="stat-card"><div class="label">1위 종목</div><div class="value accent">두산에너빌리티</div></div><div class="stat-card"><div class="label">전체 합계</div><div class="value green">+0.0억</div></div><div class="stat-card"><div class="label">KOSPI</div><div class="value green">+0.0억</div></div><div class="stat-card"><div class="label">KOSDAQ</div><div class="value green">+0.0억</div></div></div>
 <div class="table-wrap"><table>
-<thead><tr><th>#</th><th>종목명</th><th>시장</th><th>종가</th><th>현재 지분율</th><th>지분율 변동</th><th>보유수량 변동</th></tr></thead>
+<thead><tr><th>#</th><th>종목명</th><th>시장</th><th>종가</th><th>순매수금액</th><th>순매수수량</th></tr></thead>
 <tbody>
-<tr><td>1</td><td>KODEX 200선물인버스2X <span class="sub">252670</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">249원<br><span class="sub positive">+6.87%</span></td><td class="right">3.50%</td><td class="right positive">+1.73%p</td><td class="right positive">+86.5M</td></tr>
-<tr><td>2</td><td>큐리옥스바이오시스템즈 <span class="sub">445680</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">131,700원<br><span class="sub negative">-5.66%</span></td><td class="right">9.25%</td><td class="right positive">+1.32%p</td><td class="right positive">+226K</td></tr>
-<tr><td>3</td><td>SK증권 <span class="sub">001510</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">2,180원<br><span class="sub positive">+15.96%</span></td><td class="right">6.29%</td><td class="right positive">+1.22%p</td><td class="right positive">+5.7M</td></tr>
-<tr><td>4</td><td>메지온 <span class="sub">140410</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">91,500원<br><span class="sub positive">+13.81%</span></td><td class="right">25.23%</td><td class="right positive">+1.20%p</td><td class="right positive">+364K</td></tr>
-<tr><td>5</td><td>KODEX 레버리지 <span class="sub">122630</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">89,505원<br><span class="sub negative">-6.02%</span></td><td class="right">1.21%</td><td class="right positive">+0.85%p</td><td class="right positive">+532K</td></tr>
-<tr><td>6</td><td>씨엠티엑스 <span class="sub">388210</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">150,000원<br><span class="sub positive">+9.65%</span></td><td class="right">5.77%</td><td class="right positive">+0.68%p</td><td class="right positive">+64K</td></tr>
-<tr><td>7</td><td>파두 <span class="sub">440110</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">57,000원<br><span class="sub negative">-8.80%</span></td><td class="right">8.72%</td><td class="right positive">+0.67%p</td><td class="right positive">+333K</td></tr>
-<tr><td>8</td><td>테크윙 <span class="sub">089030</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">58,500원<br><span class="sub negative">-5.65%</span></td><td class="right">10.03%</td><td class="right positive">+0.58%p</td><td class="right positive">+218K</td></tr>
-<tr><td>9</td><td>선익시스템 <span class="sub">171090</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">103,500원<br><span class="sub negative">-2.73%</span></td><td class="right">9.73%</td><td class="right positive">+0.54%p</td><td class="right positive">+54K</td></tr>
-<tr><td>10</td><td>HPSP <span class="sub">403870</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">51,700원<br><span class="sub positive">+3.40%</span></td><td class="right">31.42%</td><td class="right positive">+0.42%p</td><td class="right positive">+341K</td></tr>
-</tbody>
-</table></div>
+<tr><td>1</td><td>두산에너빌리티 <span class="sub">034020</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">109,700원<br><span class="sub positive">+3.20%</span></td><td class="right ">+0.0억</td><td class="right ">+0</td></tr>
+<tr><td>2</td><td>삼천당제약 <span class="sub">000250</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">911,000원<br><span class="sub positive">+14.59%</span></td><td class="right ">+0.0억</td><td class="right ">+0</td></tr>
+<tr><td>3</td><td>대한항공 <span class="sub">003490</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">26,050원<br><span class="sub positive">+6.11%</span></td><td class="right ">+0.0억</td><td class="right ">+0</td></tr>
+<tr><td>4</td><td>미래에셋증권 <span class="sub">006800</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">68,000원<br><span class="sub positive">+1.95%</span></td><td class="right ">+0.0억</td><td class="right ">+0</td></tr>
+<tr><td>5</td><td>포스코인터내셔널 <span class="sub">047050</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">75,800원<br><span class="sub positive">+5.57%</span></td><td class="right ">+0.0억</td><td class="right ">+0</td></tr>
+<tr><td>6</td><td>에이피알 <span class="sub">278470</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">361,500원<br><span class="sub negative">-2.03%</span></td><td class="right ">+0.0억</td><td class="right ">+0</td></tr>
+<tr><td>7</td><td>주성엔지니어링 <span class="sub">036930</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">75,000원<br><span class="sub positive">+22.95%</span></td><td class="right ">+0.0억</td><td class="right ">+0</td></tr>
+<tr><td>8</td><td>한화솔루션 <span class="sub">009830</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">52,700원<br><span class="sub positive">+5.93%</span></td><td class="right ">+0.0억</td><td class="right ">+0</td></tr>
+<tr><td>9</td><td>삼성생명 <span class="sub">032830</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">226,500원<br><span class="sub negative">-1.74%</span></td><td class="right ">+0.0억</td><td class="right ">+0</td></tr>
+<tr><td>10</td><td>한미반도체 <span class="sub">042700</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">308,500원<br><span class="sub positive">+0.49%</span></td><td class="right ">+0.0억</td><td class="right ">+0</td></tr>
+</tbody></table></div>
 </div>
-<div class="pp" id="o1v">
-<div class="summary"><div class="stat-card"><div class="label">1위 종목</div><div class="value accent">우리기술</div></div><div class="stat-card"><div class="label">최대 증가</div><div class="value green">+5.18%p</div></div><div class="stat-card"><div class="label">평균 증가</div><div class="value green">+0.47%p</div></div><div class="stat-card"><div class="label">종목 수</div><div class="value amber">66</div></div></div>
+<div class="pp" id="go1v">
+<div class="summary"><div class="stat-card"><div class="label">1위 종목</div><div class="value accent">비에이치</div></div><div class="stat-card"><div class="label">전체 합계</div><div class="value red">-4,685억</div></div><div class="stat-card"><div class="label">KOSPI</div><div class="value red">-3,989억</div></div><div class="stat-card"><div class="label">KOSDAQ</div><div class="value red">-696.3억</div></div></div>
 <div class="table-wrap"><table>
-<thead><tr><th>#</th><th>종목명</th><th>시장</th><th>종가</th><th>현재 지분율</th><th>지분율 변동</th><th>보유수량 변동</th></tr></thead>
+<thead><tr><th>#</th><th>종목명</th><th>시장</th><th>종가</th><th>순매수금액</th><th>순매수수량</th></tr></thead>
 <tbody>
-<tr><td>1</td><td>우리기술 <span class="sub">032820</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">28,950원<br><span class="sub negative">-1.19%</span></td><td class="right">13.39%</td><td class="right positive">+5.18%p</td><td class="right positive">+8.8M</td></tr>
-<tr><td>2</td><td>티엘비 <span class="sub">356860</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">79,800원<br><span class="sub positive">+12.24%</span></td><td class="right">16.28%</td><td class="right positive">+2.54%p</td><td class="right positive">+250K</td></tr>
-<tr><td>3</td><td>큐리옥스바이오시스템즈 <span class="sub">445680</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">131,700원<br><span class="sub negative">-5.66%</span></td><td class="right">7.93%</td><td class="right positive">+2.35%p</td><td class="right positive">+402K</td></tr>
-<tr><td>4</td><td>휴림로봇 <span class="sub">090710</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">14,330원<br><span class="sub negative">-3.76%</span></td><td class="right">8.88%</td><td class="right positive">+2.30%p</td><td class="right positive">+2.7M</td></tr>
-<tr><td>5</td><td>SK증권 <span class="sub">001510</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">2,180원<br><span class="sub positive">+15.96%</span></td><td class="right">5.07%</td><td class="right positive">+2.16%p</td><td class="right positive">+10.2M</td></tr>
-<tr><td>6</td><td>알지노믹스 <span class="sub">476830</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">214,000원<br><span class="sub positive">+9.41%</span></td><td class="right">4.69%</td><td class="right positive">+2.04%p</td><td class="right positive">+284K</td></tr>
-<tr><td>7</td><td>HPSP <span class="sub">403870</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">51,700원<br><span class="sub positive">+3.40%</span></td><td class="right">31.00%</td><td class="right positive">+1.48%p</td><td class="right positive">+1.2M</td></tr>
-<tr><td>8</td><td>이수페타시스 <span class="sub">007660</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">129,500원<br><span class="sub positive">+3.52%</span></td><td class="right">26.15%</td><td class="right positive">+1.21%p</td><td class="right positive">+894K</td></tr>
-<tr><td>9</td><td>심텍 <span class="sub">222800</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">60,100원<br><span class="sub positive">+0.84%</span></td><td class="right">14.22%</td><td class="right positive">+1.06%p</td><td class="right positive">+398K</td></tr>
-<tr><td>10</td><td>하나마이크론 <span class="sub">067310</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">33,500원<br><span class="sub negative">-1.62%</span></td><td class="right">15.33%</td><td class="right positive">+1.01%p</td><td class="right positive">+669K</td></tr>
-</tbody>
-</table></div>
+<tr><td>1</td><td>비에이치 <span class="sub">090460</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">21,650원<br><span class="sub positive">+8.90%</span></td><td class="right positive">+37.5억</td><td class="right positive">+189K</td></tr>
+<tr><td>2</td><td>삼성전자우 <span class="sub">005935</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">140,200원<br><span class="sub negative">-2.77%</span></td><td class="right positive">+254.2억</td><td class="right positive">+176K</td></tr>
+<tr><td>3</td><td>씨에스베어링 <span class="sub">297090</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">8,590원<br><span class="sub positive">+9.01%</span></td><td class="right positive">+14.1억</td><td class="right positive">+173K</td></tr>
+<tr><td>4</td><td>피에스케이 <span class="sub">319660</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">83,900원<br><span class="sub positive">+1.70%</span></td><td class="right positive">+128.8억</td><td class="right positive">+158K</td></tr>
+<tr><td>5</td><td>대덕전자 <span class="sub">353200</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">83,100원<br><span class="sub positive">+7.50%</span></td><td class="right positive">+118.3억</td><td class="right positive">+152K</td></tr>
+<tr><td>6</td><td>HPSP <span class="sub">403870</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">50,300원<br><span class="sub negative">-2.71%</span></td><td class="right positive">+67.8억</td><td class="right positive">+132K</td></tr>
+<tr><td>7</td><td>한미반도체 <span class="sub">042700</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">308,500원<br><span class="sub positive">+0.49%</span></td><td class="right positive">+383.6억</td><td class="right positive">+126K</td></tr>
+<tr><td>8</td><td>GS건설 <span class="sub">006360</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">32,175원<br><span class="sub positive">+23.99%</span></td><td class="right positive">+32.6억</td><td class="right positive">+122K</td></tr>
+<tr><td>9</td><td>RF머트리얼즈 <span class="sub">327260</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">74,200원<br><span class="sub positive">+22.64%</span></td><td class="right positive">+73.4억</td><td class="right positive">+119K</td></tr>
+<tr><td>10</td><td>DL이앤씨 <span class="sub">375500</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">66,700원<br><span class="sub positive">+28.52%</span></td><td class="right positive">+59.8억</td><td class="right positive">+114K</td></tr>
+</tbody></table></div>
 </div>
-<div class="pp" id="o2v">
-<div class="summary"><div class="stat-card"><div class="label">1위 종목</div><div class="value accent">큐리옥스바이오시스템즈</div></div><div class="stat-card"><div class="label">최대 증가</div><div class="value green">+3.67%p</div></div><div class="stat-card"><div class="label">평균 증가</div><div class="value green">+0.57%p</div></div><div class="stat-card"><div class="label">종목 수</div><div class="value amber">66</div></div></div>
+<div class="pp" id="go2v">
+<div class="summary"><div class="stat-card"><div class="label">1위 종목</div><div class="value accent">삼성전자</div></div><div class="stat-card"><div class="label">전체 합계</div><div class="value green">+18,457억</div></div><div class="stat-card"><div class="label">KOSPI</div><div class="value green">+19,238억</div></div><div class="stat-card"><div class="label">KOSDAQ</div><div class="value red">-780.9억</div></div></div>
 <div class="table-wrap"><table>
-<thead><tr><th>#</th><th>종목명</th><th>시장</th><th>종가</th><th>현재 지분율</th><th>지분율 변동</th><th>보유수량 변동</th></tr></thead>
+<thead><tr><th>#</th><th>종목명</th><th>시장</th><th>종가</th><th>순매수금액</th><th>순매수수량</th></tr></thead>
 <tbody>
-<tr><td>1</td><td>큐리옥스바이오시스템즈 <span class="sub">445680</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">131,700원<br><span class="sub negative">-5.66%</span></td><td class="right">9.25%</td><td class="right positive">+3.67%p</td><td class="right positive">+628K</td></tr>
-<tr><td>2</td><td>SK증권 <span class="sub">001510</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">2,180원<br><span class="sub positive">+15.96%</span></td><td class="right">6.29%</td><td class="right positive">+3.38%p</td><td class="right positive">+16.0M</td></tr>
-<tr><td>3</td><td>티엘비 <span class="sub">356860</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">79,800원<br><span class="sub positive">+12.24%</span></td><td class="right">16.58%</td><td class="right positive">+2.84%p</td><td class="right positive">+279K</td></tr>
-<tr><td>4</td><td>알지노믹스 <span class="sub">476830</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">214,000원<br><span class="sub positive">+9.41%</span></td><td class="right">5.10%</td><td class="right positive">+2.45%p</td><td class="right positive">+341K</td></tr>
-<tr><td>5</td><td>우리기술 <span class="sub">032820</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">28,950원<br><span class="sub negative">-1.19%</span></td><td class="right">10.26%</td><td class="right positive">+2.05%p</td><td class="right positive">+3.5M</td></tr>
-<tr><td>6</td><td>HPSP <span class="sub">403870</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">51,700원<br><span class="sub positive">+3.40%</span></td><td class="right">31.42%</td><td class="right positive">+1.90%p</td><td class="right positive">+1.6M</td></tr>
-<tr><td>7</td><td>이수페타시스 <span class="sub">007660</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">129,500원<br><span class="sub positive">+3.52%</span></td><td class="right">26.56%</td><td class="right positive">+1.62%p</td><td class="right positive">+1.2M</td></tr>
-<tr><td>8</td><td>메지온 <span class="sub">140410</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">91,500원<br><span class="sub positive">+13.81%</span></td><td class="right">25.23%</td><td class="right positive">+1.55%p</td><td class="right positive">+472K</td></tr>
-<tr><td>9</td><td>심텍 <span class="sub">222800</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">60,100원<br><span class="sub positive">+0.84%</span></td><td class="right">14.24%</td><td class="right positive">+1.08%p</td><td class="right positive">+405K</td></tr>
-<tr><td>10</td><td>테크윙 <span class="sub">089030</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">58,500원<br><span class="sub negative">-5.65%</span></td><td class="right">10.03%</td><td class="right positive">+1.07%p</td><td class="right positive">+397K</td></tr>
-</tbody>
-</table></div>
+<tr><td>1</td><td>삼성전자 <span class="sub">005930</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">199,500원<br><span class="sub negative">-0.50%</span></td><td class="right positive">+6,784억</td><td class="right positive">+3.3M</td></tr>
+<tr><td>2</td><td>SK하이닉스 <span class="sub">000660</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">1,006,000원<br><span class="sub negative">-0.69%</span></td><td class="right positive">+7,297억</td><td class="right positive">+717K</td></tr>
+<tr><td>3</td><td>한화솔루션 <span class="sub">009830</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">52,700원<br><span class="sub positive">+5.93%</span></td><td class="right positive">+293.7억</td><td class="right positive">+579K</td></tr>
+<tr><td>4</td><td>GS건설 <span class="sub">006360</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">32,175원<br><span class="sub positive">+23.99%</span></td><td class="right positive">+142.6억</td><td class="right positive">+566K</td></tr>
+<tr><td>5</td><td>HLB이노베이션 <span class="sub">024850</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">4,930원<br><span class="sub negative">-2.38%</span></td><td class="right positive">+26.0억</td><td class="right positive">+551K</td></tr>
+<tr><td>6</td><td>두산에너빌리티 <span class="sub">034020</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">109,700원<br><span class="sub positive">+3.20%</span></td><td class="right positive">+514.1억</td><td class="right positive">+476K</td></tr>
+<tr><td>7</td><td>대한항공 <span class="sub">003490</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">26,050원<br><span class="sub positive">+6.11%</span></td><td class="right positive">+122.6억</td><td class="right positive">+474K</td></tr>
+<tr><td>8</td><td>삼성전자우 <span class="sub">005935</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">140,200원<br><span class="sub negative">-2.77%</span></td><td class="right positive">+676.4억</td><td class="right positive">+464K</td></tr>
+<tr><td>9</td><td>대덕전자 <span class="sub">353200</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">83,100원<br><span class="sub positive">+7.50%</span></td><td class="right positive">+245.7억</td><td class="right positive">+326K</td></tr>
+<tr><td>10</td><td>NH투자증권 <span class="sub">005940</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">35,250원<br><span class="sub positive">+5.54%</span></td><td class="right positive">+107.1억</td><td class="right positive">+317K</td></tr>
+</tbody></table></div>
 </div>
-<div class="pp" id="o3v">
-<div class="summary"><div class="stat-card"><div class="label">1위 종목</div><div class="value accent">큐리옥스바이오시스템즈</div></div><div class="stat-card"><div class="label">최대 증가</div><div class="value green">+4.21%p</div></div><div class="stat-card"><div class="label">평균 증가</div><div class="value green">+0.49%p</div></div><div class="stat-card"><div class="label">종목 수</div><div class="value amber">66</div></div></div>
+<div class="pp" id="go3v">
+<div class="summary"><div class="stat-card"><div class="label">1위 종목</div><div class="value accent">삼성전자</div></div><div class="stat-card"><div class="label">전체 합계</div><div class="value green">+25,655억</div></div><div class="stat-card"><div class="label">KOSPI</div><div class="value green">+26,587억</div></div><div class="stat-card"><div class="label">KOSDAQ</div><div class="value red">-932.7억</div></div></div>
 <div class="table-wrap"><table>
-<thead><tr><th>#</th><th>종목명</th><th>시장</th><th>종가</th><th>현재 지분율</th><th>지분율 변동</th><th>보유수량 변동</th></tr></thead>
+<thead><tr><th>#</th><th>종목명</th><th>시장</th><th>종가</th><th>순매수금액</th><th>순매수수량</th></tr></thead>
 <tbody>
-<tr><td>1</td><td>큐리옥스바이오시스템즈 <span class="sub">445680</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">131,700원<br><span class="sub negative">-5.66%</span></td><td class="right">9.25%</td><td class="right positive">+4.21%p</td><td class="right positive">+721K</td></tr>
-<tr><td>2</td><td>티엘비 <span class="sub">356860</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">79,800원<br><span class="sub positive">+12.24%</span></td><td class="right">16.58%</td><td class="right positive">+2.64%p</td><td class="right positive">+260K</td></tr>
-<tr><td>3</td><td>SK증권 <span class="sub">001510</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">2,180원<br><span class="sub positive">+15.96%</span></td><td class="right">6.29%</td><td class="right positive">+2.63%p</td><td class="right positive">+12.4M</td></tr>
-<tr><td>4</td><td>심텍 <span class="sub">222800</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">60,100원<br><span class="sub positive">+0.84%</span></td><td class="right">14.24%</td><td class="right positive">+2.47%p</td><td class="right positive">+923K</td></tr>
-<tr><td>5</td><td>HPSP <span class="sub">403870</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">51,700원<br><span class="sub positive">+3.40%</span></td><td class="right">31.42%</td><td class="right positive">+2.39%p</td><td class="right positive">+2.0M</td></tr>
-<tr><td>6</td><td>메지온 <span class="sub">140410</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">91,500원<br><span class="sub positive">+13.81%</span></td><td class="right">25.23%</td><td class="right positive">+2.35%p</td><td class="right positive">+714K</td></tr>
-<tr><td>7</td><td>이수페타시스 <span class="sub">007660</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">129,500원<br><span class="sub positive">+3.52%</span></td><td class="right">26.56%</td><td class="right positive">+2.26%p</td><td class="right positive">+1.7M</td></tr>
-<tr><td>8</td><td>알지노믹스 <span class="sub">476830</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">214,000원<br><span class="sub positive">+9.41%</span></td><td class="right">5.10%</td><td class="right positive">+1.96%p</td><td class="right positive">+274K</td></tr>
-<tr><td>9</td><td>선익시스템 <span class="sub">171090</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">103,500원<br><span class="sub negative">-2.73%</span></td><td class="right">9.73%</td><td class="right positive">+1.45%p</td><td class="right positive">+148K</td></tr>
-<tr><td>10</td><td>세미파이브 <span class="sub">490470</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">31,250원<br><span class="sub positive">+7.20%</span></td><td class="right">2.40%</td><td class="right positive">+1.29%p</td><td class="right positive">+437K</td></tr>
-</tbody>
-</table></div>
+<tr><td>1</td><td>삼성전자 <span class="sub">005930</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">199,500원<br><span class="sub negative">-0.50%</span></td><td class="right positive">+11,611억</td><td class="right positive">+5.8M</td></tr>
+<tr><td>2</td><td>대한항공 <span class="sub">003490</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">26,050원<br><span class="sub positive">+6.11%</span></td><td class="right positive">+346.1억</td><td class="right positive">+1.4M</td></tr>
+<tr><td>3</td><td>SK하이닉스 <span class="sub">000660</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">1,006,000원<br><span class="sub negative">-0.69%</span></td><td class="right positive">+9,686억</td><td class="right positive">+964K</td></tr>
+<tr><td>4</td><td>HLB이노베이션 <span class="sub">024850</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">4,930원<br><span class="sub negative">-2.38%</span></td><td class="right positive">+38.2억</td><td class="right positive">+854K</td></tr>
+<tr><td>5</td><td>GS건설 <span class="sub">006360</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">32,175원<br><span class="sub positive">+23.99%</span></td><td class="right positive">+204.5억</td><td class="right positive">+840K</td></tr>
+<tr><td>6</td><td>대덕전자 <span class="sub">353200</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">83,100원<br><span class="sub positive">+7.50%</span></td><td class="right positive">+490.9억</td><td class="right positive">+694K</td></tr>
+<tr><td>7</td><td>NH투자증권 <span class="sub">005940</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">35,250원<br><span class="sub positive">+5.54%</span></td><td class="right positive">+201.6억</td><td class="right positive">+610K</td></tr>
+<tr><td>8</td><td>삼성전자우 <span class="sub">005935</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">140,200원<br><span class="sub negative">-2.77%</span></td><td class="right positive">+871.4억</td><td class="right positive">+603K</td></tr>
+<tr><td>9</td><td>씨에스베어링 <span class="sub">297090</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">8,590원<br><span class="sub positive">+9.01%</span></td><td class="right positive">+39.0억</td><td class="right positive">+483K</td></tr>
+<tr><td>10</td><td>피에스케이 <span class="sub">319660</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">83,900원<br><span class="sub positive">+1.70%</span></td><td class="right positive">+357.3억</td><td class="right positive">+468K</td></tr>
+</tbody></table></div>
 </div>
-<div class="pp" id="o4v">
-<div class="summary"><div class="stat-card"><div class="label">1위 종목</div><div class="value accent">큐리옥스바이오시스템즈</div></div><div class="stat-card"><div class="label">최대 증가</div><div class="value green">+4.55%p</div></div><div class="stat-card"><div class="label">평균 증가</div><div class="value green">+0.24%p</div></div><div class="stat-card"><div class="label">종목 수</div><div class="value amber">66</div></div></div>
+<div class="pp" id="go4v">
+<div class="summary"><div class="stat-card"><div class="label">1위 종목</div><div class="value accent">두산에너빌리티</div></div><div class="stat-card"><div class="label">전체 합계</div><div class="value green">+22,966억</div></div><div class="stat-card"><div class="label">KOSPI</div><div class="value green">+21,390억</div></div><div class="stat-card"><div class="label">KOSDAQ</div><div class="value green">+1,576억</div></div></div>
 <div class="table-wrap"><table>
-<thead><tr><th>#</th><th>종목명</th><th>시장</th><th>종가</th><th>현재 지분율</th><th>지분율 변동</th><th>보유수량 변동</th></tr></thead>
+<thead><tr><th>#</th><th>종목명</th><th>시장</th><th>종가</th><th>순매수금액</th><th>순매수수량</th></tr></thead>
 <tbody>
-<tr><td>1</td><td>큐리옥스바이오시스템즈 <span class="sub">445680</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">131,700원<br><span class="sub negative">-5.66%</span></td><td class="right">9.25%</td><td class="right positive">+4.55%p</td><td class="right positive">+779K</td></tr>
-<tr><td>2</td><td>우리기술 <span class="sub">032820</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">28,950원<br><span class="sub negative">-1.19%</span></td><td class="right">10.26%</td><td class="right positive">+3.67%p</td><td class="right positive">+6.4M</td></tr>
-<tr><td>3</td><td>HJ중공업 <span class="sub">097230</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">27,800원<br><span class="sub positive">+0.72%</span></td><td class="right">6.64%</td><td class="right positive">+2.70%p</td><td class="right positive">+2.4M</td></tr>
-<tr><td>4</td><td>티엘비 <span class="sub">356860</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">79,800원<br><span class="sub positive">+12.24%</span></td><td class="right">16.58%</td><td class="right positive">+2.61%p</td><td class="right positive">+257K</td></tr>
-<tr><td>5</td><td>알지노믹스 <span class="sub">476830</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">214,000원<br><span class="sub positive">+9.41%</span></td><td class="right">5.10%</td><td class="right positive">+2.46%p</td><td class="right positive">+342K</td></tr>
-<tr><td>6</td><td>메지온 <span class="sub">140410</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">91,500원<br><span class="sub positive">+13.81%</span></td><td class="right">25.23%</td><td class="right positive">+2.33%p</td><td class="right positive">+708K</td></tr>
-<tr><td>7</td><td>KT&G <span class="sub">033780</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">157,000원<br><span class="sub negative">-1.07%</span></td><td class="right">44.86%</td><td class="right positive">+1.48%p</td><td class="right positive">+274K</td></tr>
-<tr><td>8</td><td>이수페타시스 <span class="sub">007660</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">129,500원<br><span class="sub positive">+3.52%</span></td><td class="right">26.56%</td><td class="right positive">+1.45%p</td><td class="right positive">+1.1M</td></tr>
-<tr><td>9</td><td>세미파이브 <span class="sub">490470</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">31,250원<br><span class="sub positive">+7.20%</span></td><td class="right">2.40%</td><td class="right positive">+1.23%p</td><td class="right positive">+417K</td></tr>
-<tr><td>10</td><td>인텔리안테크 <span class="sub">189300</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">123,400원<br><span class="sub negative">-3.14%</span></td><td class="right">16.53%</td><td class="right positive">+0.95%p</td><td class="right positive">+102K</td></tr>
-</tbody>
-</table></div>
+<tr><td>1</td><td>두산에너빌리티 <span class="sub">034020</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">109,700원<br><span class="sub positive">+3.20%</span></td><td class="right positive">+2,756억</td><td class="right positive">+2.6M</td></tr>
+<tr><td>2</td><td>삼성전자 <span class="sub">005930</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">199,500원<br><span class="sub negative">-0.50%</span></td><td class="right positive">+6,009억</td><td class="right positive">+2.5M</td></tr>
+<tr><td>3</td><td>삼성중공업 <span class="sub">010140</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">28,650원<br><span class="sub positive">+0.53%</span></td><td class="right positive">+648.8억</td><td class="right positive">+2.1M</td></tr>
+<tr><td>4</td><td>NH투자증권 <span class="sub">005940</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">35,250원<br><span class="sub positive">+5.54%</span></td><td class="right positive">+633.4억</td><td class="right positive">+1.9M</td></tr>
+<tr><td>5</td><td>한화솔루션 <span class="sub">009830</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">52,700원<br><span class="sub positive">+5.93%</span></td><td class="right positive">+794.5억</td><td class="right positive">+1.5M</td></tr>
+<tr><td>6</td><td>삼성전자우 <span class="sub">005935</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">140,200원<br><span class="sub negative">-2.77%</span></td><td class="right positive">+1,981억</td><td class="right positive">+1.5M</td></tr>
+<tr><td>7</td><td>GS건설 <span class="sub">006360</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">32,175원<br><span class="sub positive">+23.99%</span></td><td class="right positive">+353.8억</td><td class="right positive">+1.5M</td></tr>
+<tr><td>8</td><td>대덕전자 <span class="sub">353200</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">83,100원<br><span class="sub positive">+7.50%</span></td><td class="right positive">+760.9억</td><td class="right positive">+1.1M</td></tr>
+<tr><td>9</td><td>포스코인터내셔널 <span class="sub">047050</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">75,800원<br><span class="sub positive">+5.57%</span></td><td class="right positive">+872.0억</td><td class="right positive">+1.1M</td></tr>
+<tr><td>10</td><td>HLB이노베이션 <span class="sub">024850</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">4,930원<br><span class="sub negative">-2.38%</span></td><td class="right positive">+39.3억</td><td class="right positive">+864K</td></tr>
+</tbody></table></div>
 </div>
-<div class="pp" id="o5v">
-<div class="summary"><div class="stat-card"><div class="label">1위 종목</div><div class="value accent">HPSP</div></div><div class="stat-card"><div class="label">최대 증가</div><div class="value green">+6.85%p</div></div><div class="stat-card"><div class="label">평균 증가</div><div class="value green">+0.77%p</div></div><div class="stat-card"><div class="label">종목 수</div><div class="value amber">66</div></div></div>
+<div class="pp" id="go5v">
+<div class="summary"><div class="stat-card"><div class="label">1위 종목</div><div class="value accent">삼성전자</div></div><div class="stat-card"><div class="label">전체 합계</div><div class="value green">+73,867억</div></div><div class="stat-card"><div class="label">KOSPI</div><div class="value green">+61,925억</div></div><div class="stat-card"><div class="label">KOSDAQ</div><div class="value green">+11,942억</div></div></div>
 <div class="table-wrap"><table>
-<thead><tr><th>#</th><th>종목명</th><th>시장</th><th>종가</th><th>현재 지분율</th><th>지분율 변동</th><th>보유수량 변동</th></tr></thead>
+<thead><tr><th>#</th><th>종목명</th><th>시장</th><th>종가</th><th>순매수금액</th><th>순매수수량</th></tr></thead>
 <tbody>
-<tr><td>1</td><td>HPSP <span class="sub">403870</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">51,700원<br><span class="sub positive">+3.40%</span></td><td class="right">31.42%</td><td class="right positive">+6.85%p</td><td class="right positive">+5.2M</td></tr>
-<tr><td>2</td><td>큐리옥스바이오시스템즈 <span class="sub">445680</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">131,700원<br><span class="sub negative">-5.66%</span></td><td class="right">9.25%</td><td class="right positive">+4.95%p</td><td class="right positive">+848K</td></tr>
-<tr><td>3</td><td>선익시스템 <span class="sub">171090</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">103,500원<br><span class="sub negative">-2.73%</span></td><td class="right">9.73%</td><td class="right positive">+4.17%p</td><td class="right positive">+445K</td></tr>
-<tr><td>4</td><td>대한광통신 <span class="sub">010170</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">7,390원<br><span class="sub positive">+5.12%</span></td><td class="right">5.38%</td><td class="right positive">+3.95%p</td><td class="right positive">+6.5M</td></tr>
-<tr><td>5</td><td>HJ중공업 <span class="sub">097230</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">27,800원<br><span class="sub positive">+0.72%</span></td><td class="right">6.64%</td><td class="right positive">+3.95%p</td><td class="right positive">+3.6M</td></tr>
-<tr><td>6</td><td>알지노믹스 <span class="sub">476830</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">214,000원<br><span class="sub positive">+9.41%</span></td><td class="right">5.10%</td><td class="right positive">+3.54%p</td><td class="right positive">+492K</td></tr>
-<tr><td>7</td><td>씨엠티엑스 <span class="sub">388210</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">150,000원<br><span class="sub positive">+9.65%</span></td><td class="right">5.77%</td><td class="right positive">+3.34%p</td><td class="right positive">+317K</td></tr>
-<tr><td>8</td><td>LG이노텍 <span class="sub">011070</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">286,000원<br><span class="sub positive">+6.52%</span></td><td class="right">32.13%</td><td class="right positive">+3.06%p</td><td class="right positive">+722K</td></tr>
-<tr><td>9</td><td>티엘비 <span class="sub">356860</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">79,800원<br><span class="sub positive">+12.24%</span></td><td class="right">16.58%</td><td class="right positive">+2.60%p</td><td class="right positive">+256K</td></tr>
-<tr><td>10</td><td>심텍 <span class="sub">222800</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">60,100원<br><span class="sub positive">+0.84%</span></td><td class="right">14.24%</td><td class="right positive">+2.32%p</td><td class="right positive">+865K</td></tr>
-</tbody>
-</table></div>
+<tr><td>1</td><td>삼성전자 <span class="sub">005930</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">199,500원<br><span class="sub negative">-0.50%</span></td><td class="right positive">+27,067억</td><td class="right positive">+12.8M</td></tr>
+<tr><td>2</td><td>팬오션 <span class="sub">028670</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">5,300원<br><span class="sub positive">+4.95%</span></td><td class="right positive">+336.1억</td><td class="right positive">+5.7M</td></tr>
+<tr><td>3</td><td>삼성전자우 <span class="sub">005935</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">140,200원<br><span class="sub negative">-2.77%</span></td><td class="right positive">+4,318억</td><td class="right positive">+3.1M</td></tr>
+<tr><td>4</td><td>포스코인터내셔널 <span class="sub">047050</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">75,800원<br><span class="sub positive">+5.57%</span></td><td class="right positive">+1,678억</td><td class="right positive">+2.2M</td></tr>
+<tr><td>5</td><td>대덕전자 <span class="sub">353200</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">83,100원<br><span class="sub positive">+7.50%</span></td><td class="right positive">+1,360억</td><td class="right positive">+2.1M</td></tr>
+<tr><td>6</td><td>HPSP <span class="sub">403870</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">50,300원<br><span class="sub negative">-2.71%</span></td><td class="right positive">+955.5억</td><td class="right positive">+2.0M</td></tr>
+<tr><td>7</td><td>서진시스템 <span class="sub">178320</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">48,950원<br><span class="sub positive">+7.82%</span></td><td class="right positive">+871.9억</td><td class="right positive">+2.0M</td></tr>
+<tr><td>8</td><td>NH투자증권 <span class="sub">005940</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">35,250원<br><span class="sub positive">+5.54%</span></td><td class="right positive">+620.3억</td><td class="right positive">+1.9M</td></tr>
+<tr><td>9</td><td>KB금융 <span class="sub">105560</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">155,600원<br><span class="sub negative">-0.06%</span></td><td class="right positive">+2,997억</td><td class="right positive">+1.9M</td></tr>
+<tr><td>10</td><td>SK하이닉스 <span class="sub">000660</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">1,006,000원<br><span class="sub negative">-0.69%</span></td><td class="right positive">+18,383억</td><td class="right positive">+1.8M</td></tr>
+</tbody></table></div>
 </div>
-<div class="pp" id="o6v">
-<div class="summary"><div class="stat-card"><div class="label">1위 종목</div><div class="value accent">HPSP</div></div><div class="stat-card"><div class="label">최대 증가</div><div class="value green">+9.95%p</div></div><div class="stat-card"><div class="label">평균 증가</div><div class="value green">+0.77%p</div></div><div class="stat-card"><div class="label">종목 수</div><div class="value amber">64</div></div></div>
+<div class="pp" id="go6v">
+<div class="summary"><div class="stat-card"><div class="label">1위 종목</div><div class="value accent">삼성전자</div></div><div class="stat-card"><div class="label">전체 합계</div><div class="value green">+130,728억</div></div><div class="stat-card"><div class="label">KOSPI</div><div class="value green">+120,073억</div></div><div class="stat-card"><div class="label">KOSDAQ</div><div class="value green">+10,655억</div></div></div>
 <div class="table-wrap"><table>
-<thead><tr><th>#</th><th>종목명</th><th>시장</th><th>종가</th><th>현재 지분율</th><th>지분율 변동</th><th>보유수량 변동</th></tr></thead>
+<thead><tr><th>#</th><th>종목명</th><th>시장</th><th>종가</th><th>순매수금액</th><th>순매수수량</th></tr></thead>
 <tbody>
-<tr><td>1</td><td>HPSP <span class="sub">403870</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">51,700원<br><span class="sub positive">+3.40%</span></td><td class="right">31.42%</td><td class="right positive">+9.95%p</td><td class="right positive">+7.9M</td></tr>
-<tr><td>2</td><td>우리기술 <span class="sub">032820</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">28,950원<br><span class="sub negative">-1.19%</span></td><td class="right">10.26%</td><td class="right positive">+5.49%p</td><td class="right positive">+9.4M</td></tr>
-<tr><td>3</td><td>큐리옥스바이오시스템즈 <span class="sub">445680</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">131,700원<br><span class="sub negative">-5.66%</span></td><td class="right">9.25%</td><td class="right positive">+4.76%p</td><td class="right positive">+815K</td></tr>
-<tr><td>4</td><td>심텍 <span class="sub">222800</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">60,100원<br><span class="sub positive">+0.84%</span></td><td class="right">14.24%</td><td class="right positive">+4.60%p</td><td class="right positive">+1.7M</td></tr>
-<tr><td>5</td><td>유진테크 <span class="sub">084370</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">131,900원<br><span class="sub positive">+2.01%</span></td><td class="right">34.54%</td><td class="right positive">+4.55%p</td><td class="right positive">+1.0M</td></tr>
-<tr><td>6</td><td>선익시스템 <span class="sub">171090</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">103,500원<br><span class="sub negative">-2.73%</span></td><td class="right">9.73%</td><td class="right positive">+4.52%p</td><td class="right positive">+481K</td></tr>
-<tr><td>7</td><td>HJ중공업 <span class="sub">097230</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">27,800원<br><span class="sub positive">+0.72%</span></td><td class="right">6.64%</td><td class="right positive">+4.17%p</td><td class="right positive">+3.8M</td></tr>
-<tr><td>8</td><td>현대건설 <span class="sub">000720</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">169,500원<br><span class="sub negative">-0.35%</span></td><td class="right">24.43%</td><td class="right positive">+4.02%p</td><td class="right positive">+4.5M</td></tr>
-<tr><td>9</td><td>씨엠티엑스 <span class="sub">388210</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">150,000원<br><span class="sub positive">+9.65%</span></td><td class="right">5.77%</td><td class="right positive">+4.00%p</td><td class="right positive">+385K</td></tr>
-<tr><td>10</td><td>LG이노텍 <span class="sub">011070</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">286,000원<br><span class="sub positive">+6.52%</span></td><td class="right">32.13%</td><td class="right positive">+3.46%p</td><td class="right positive">+819K</td></tr>
-</tbody>
-</table></div>
+<tr><td>1</td><td>삼성전자 <span class="sub">005930</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">199,500원<br><span class="sub negative">-0.50%</span></td><td class="right positive">+44,201억</td><td class="right positive">+23.1M</td></tr>
+<tr><td>2</td><td>팬오션 <span class="sub">028670</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">5,300원<br><span class="sub positive">+4.95%</span></td><td class="right positive">+429.5억</td><td class="right positive">+7.5M</td></tr>
+<tr><td>3</td><td>삼성전자우 <span class="sub">005935</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">140,200원<br><span class="sub negative">-2.77%</span></td><td class="right positive">+5,786억</td><td class="right positive">+4.4M</td></tr>
+<tr><td>4</td><td>SK하이닉스 <span class="sub">000660</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">1,006,000원<br><span class="sub negative">-0.69%</span></td><td class="right positive">+37,402억</td><td class="right positive">+3.9M</td></tr>
+<tr><td>5</td><td>두산에너빌리티 <span class="sub">034020</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">109,700원<br><span class="sub positive">+3.20%</span></td><td class="right positive">+4,028억</td><td class="right positive">+3.8M</td></tr>
+<tr><td>6</td><td>한화솔루션 <span class="sub">009830</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">52,700원<br><span class="sub positive">+5.93%</span></td><td class="right positive">+1,351억</td><td class="right positive">+3.5M</td></tr>
+<tr><td>7</td><td>KB금융 <span class="sub">105560</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">155,600원<br><span class="sub negative">-0.06%</span></td><td class="right positive">+5,305억</td><td class="right positive">+3.3M</td></tr>
+<tr><td>8</td><td>NH투자증권 <span class="sub">005940</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">35,250원<br><span class="sub positive">+5.54%</span></td><td class="right positive">+980.2억</td><td class="right positive">+3.2M</td></tr>
+<tr><td>9</td><td>포스코인터내셔널 <span class="sub">047050</span></td><td><span class="badge badge-kospi">KOSPI</span></td><td class="right">75,800원<br><span class="sub positive">+5.57%</span></td><td class="right positive">+2,037억</td><td class="right positive">+2.7M</td></tr>
+<tr><td>10</td><td>HPSP <span class="sub">403870</span></td><td><span class="badge badge-kosdaq">KOSDAQ</span></td><td class="right">50,300원<br><span class="sub negative">-2.71%</span></td><td class="right positive">+1,271억</td><td class="right positive">+2.7M</td></tr>
+</tbody></table></div>
+</div>
 </div>
 </div>
 
 <div style="text-align:center;padding:24px 0;color:#636678;font-size:12px">
-  Generated by UTONG | Data source: Naver Finance
+  Generated by UTONG | Data source: KIS OpenAPI
 </div>
 
 <script>
 (function(){
-function fmtAmt(v){
-var a=v/1e8,ab=Math.abs(a);
+/* ── 포매팅 ── */
+function fmtAmt(v){var a=v/1e8,ab=Math.abs(a);
 var s=ab>=1000?ab.toLocaleString('ko-KR',{maximumFractionDigits:0}):ab.toLocaleString('ko-KR',{minimumFractionDigits:1,maximumFractionDigits:1});
-return (a>=0?'+':'-')+s+'\uc5b5';
-}
-function fmtVol(v){
-var ab=Math.abs(v),sign=v>=0?'+':'';
-if(ab>=1e6)return sign+(v/1e6).toFixed(1)+'M';
-if(ab>=1e3)return sign+Math.round(v/1e3)+'K';
-return sign+v.toLocaleString('ko-KR');
-}
+return(a>=0?'+':'-')+s+'\uc5b5';}
+function fmtVol(v){var ab=Math.abs(v),s=v>=0?'+':'';
+if(ab>=1e6)return s+(v/1e6).toFixed(1)+'M';if(ab>=1e3)return s+Math.round(v/1e3)+'K';return s+v.toLocaleString('ko-KR');}
 function fmtPrice(v){return v?v.toLocaleString('ko-KR')+'\uc6d0':'-';}
-function valCls(v){return v>0?'positive':(v<0?'negative':'');}
-function mktBadge(m){return '<span class="badge badge-'+m.toLowerCase()+'">'+m+'</span>';}
-var btn=document.getElementById('refresh-btn');
-function updateRankings(){
-if(btn){btn.disabled=true;btn.textContent='\uac31\uc2e0 \uc911...';}
-fetch('/api/rankings').then(function(r){return r.json();}).then(function(data){
-if(!data.rankings||!data.rankings.length){if(btn){btn.disabled=false;btn.textContent='\u21bb \uc0c8\ub85c\uace0\uce68';}return;}
-var panel=document.getElementById('n0v');
-if(!panel){if(btn){btn.disabled=false;btn.textContent='\u21bb \uc0c8\ub85c\uace0\uce68';}return;}
-var rows=data.rankings.slice(0,10),all=data.rankings;
-var totalAmt=0,kospiAmt=0,kosdaqAmt=0;
-for(var i=0;i<all.length;i++){
-totalAmt+=all[i].buy_amount;
-if(all[i].market==='KOSPI')kospiAmt+=all[i].buy_amount;
-else kosdaqAmt+=all[i].buy_amount;
-}
-var tc=totalAmt>=0?'green':'red',kc=kospiAmt>=0?'green':'red',dc=kosdaqAmt>=0?'green':'red';
-var html='<div class="summary">'
+function vc(v){return v>0?'positive':(v<0?'negative':'');}
+function mb(m){return'<span class="badge badge-'+m.toLowerCase()+'">'+m+'</span>';}
+
+/* ── 수급 패널 업데이트 ── */
+function updatePanel(pid,rows){
+if(!rows||!rows.length)return;
+var panel=document.getElementById(pid);if(!panel)return;
+var top=rows.slice(0,10),all=rows;
+var ta=0,ka=0,da=0;
+for(var i=0;i<all.length;i++){ta+=all[i].buy_amount;if(all[i].market==='KOSPI')ka+=all[i].buy_amount;else da+=all[i].buy_amount;}
+var tc=ta>=0?'green':'red',kc=ka>=0?'green':'red',dc=da>=0?'green':'red';
+var h='<div class="summary">'
 +'<div class="stat-card"><div class="label">1\uc704 \uc885\ubaa9</div><div class="value accent">'+all[0].name+'</div></div>'
-+'<div class="stat-card"><div class="label">\uc804\uccb4 \ud569\uacc4</div><div class="value '+tc+'">'+fmtAmt(totalAmt)+'</div></div>'
-+'<div class="stat-card"><div class="label">KOSPI</div><div class="value '+kc+'">'+fmtAmt(kospiAmt)+'</div></div>'
-+'<div class="stat-card"><div class="label">KOSDAQ</div><div class="value '+dc+'">'+fmtAmt(kosdaqAmt)+'</div></div>'
-+'</div>';
-html+='<div class="table-wrap"><table>'
-+'<thead><tr><th>#</th><th>\uc885\ubaa9\uba85</th><th>\uc2dc\uc7a5</th><th>\uc885\uac00</th><th>\uc21c\ub9e4\uc218\uae08\uc561</th><th>\uc21c\ub9e4\uc218\uc218\ub7c9</th></tr></thead><tbody>';
-for(var j=0;j<rows.length;j++){
-var r=rows[j],cs=r.change>=0?'+':'';
-html+='<tr><td>'+(j+1)+'</td>'
-+'<td>'+r.name+' <span class="sub">'+r.code+'</span></td>'
-+'<td>'+mktBadge(r.market)+'</td>'
-+'<td class="right">'+fmtPrice(r.price)+'<br><span class="sub '+valCls(r.change)+'">'+cs+r.change.toFixed(2)+'%</span></td>'
-+'<td class="right '+valCls(r.buy_amount)+'">'+fmtAmt(r.buy_amount)+'</td>'
-+'<td class="right '+valCls(r.buy_volume)+'">'+fmtVol(r.buy_volume)+'</td></tr>';
-}
-html+='</tbody></table></div>';
-panel.innerHTML=html;
-var meta=document.querySelector('.meta');
-if(meta){
-var ts=data.timestamp||'';
-var timeStr=ts.length>=16?ts.substring(11,16):new Date().toTimeString().substring(0,5);
-var dateStr=ts.length>=10?ts.substring(0,4)+'.'+ts.substring(5,7)+'.'+ts.substring(8,10):'';
-if(dateStr){meta.innerHTML='\uae30\uc900\uc77c: '+dateStr+' '+timeStr+' | KOSPI + KOSDAQ | Data: Naver Finance | <span class="live-indicator">\uc2e4\uc2dc\uac04</span>';}
-else{var base=meta.textContent.replace(/\s*\|\s*\uc2e4\uc2dc\uac04.*$/,'');meta.innerHTML=base+' | <span class="live-indicator">\uc2e4\uc2dc\uac04 ('+timeStr+' \uac31\uc2e0)</span>';}
-}
++'<div class="stat-card"><div class="label">\uc804\uccb4 \ud569\uacc4</div><div class="value '+tc+'">'+fmtAmt(ta)+'</div></div>'
++'<div class="stat-card"><div class="label">KOSPI</div><div class="value '+kc+'">'+fmtAmt(ka)+'</div></div>'
++'<div class="stat-card"><div class="label">KOSDAQ</div><div class="value '+dc+'">'+fmtAmt(da)+'</div></div></div>';
+h+='<div class="table-wrap"><table><thead><tr><th>#</th><th>\uc885\ubaa9\uba85</th><th>\uc2dc\uc7a5</th><th>\uc885\uac00</th><th>\uc21c\ub9e4\uc218\uae08\uc561</th><th>\uc21c\ub9e4\uc218\uc218\ub7c9</th></tr></thead><tbody>';
+for(var j=0;j<top.length;j++){var r=top[j],cs=r.change>=0?'+':'';
+h+='<tr><td>'+(j+1)+'</td><td>'+r.name+' <span class="sub">'+r.code+'</span></td><td>'+mb(r.market)+'</td>'
++'<td class="right">'+fmtPrice(r.price)+'<br><span class="sub '+vc(r.change)+'">'+cs+r.change.toFixed(2)+'%</span></td>'
++'<td class="right '+vc(r.buy_amount)+'">'+fmtAmt(r.buy_amount)+'</td>'
++'<td class="right '+vc(r.buy_volume)+'">'+fmtVol(r.buy_volume)+'</td></tr>';}
+h+='</tbody></table></div>';panel.innerHTML=h;}
+
+/* ── 매크로 스파크라인 ── */
+var STORE_KEY='utong_spark_'+new Date().toISOString().slice(0,10);
+function loadSparkData(){try{return JSON.parse(localStorage.getItem(STORE_KEY))||{};}catch(e){return {};}}
+function saveSparkData(d){try{localStorage.setItem(STORE_KEY,JSON.stringify(d));}catch(e){}}
+
+function fmtMacroVal(ind){
+var v=ind.value,c=ind.category,u=ind.unit||'';
+if(c==='rate')return v.toFixed(2)+'%';
+if(u==='$')return'$'+v.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+if(u==='\uc6d0')return v.toLocaleString('ko-KR',{minimumFractionDigits:1,maximumFractionDigits:1});
+return v.toLocaleString('ko-KR',{minimumFractionDigits:2,maximumFractionDigits:2});}
+
+function fmtMacroChg(ind){
+var c=ind.change,cp=ind.change_pct,u=ind.unit||'',cat=ind.category;
+var s=c>=0?'+':'';
+if(cat==='rate')return s+c.toFixed(2)+'%p ('+s+cp.toFixed(2)+'%)';
+if(u==='$')return s+c.toFixed(2)+' ('+s+cp.toFixed(2)+'%)';
+if(u==='\uc6d0')return s+c.toFixed(1)+' ('+s+cp.toFixed(2)+'%)';
+return s+c.toFixed(2)+' ('+s+cp.toFixed(2)+'%)';}
+
+function renderSpark(svg,pts,color){
+if(!pts||pts.length<2){svg.innerHTML='';return;}
+var vals=pts.map(function(p){return p.v;});
+var mn=Math.min.apply(null,vals),mx=Math.max.apply(null,vals);
+var range=mx-mn||1;var W=120,H=32,pad=2;
+var coords=[];
+for(var i=0;i<vals.length;i++){
+var x=pad+(W-2*pad)*i/(vals.length-1);
+var y=H-pad-(H-2*pad)*(vals[i]-mn)/range;
+coords.push(x.toFixed(1)+','+y.toFixed(1));}
+var lineStr=coords.join(' ');
+var areaStr=coords.join(' ')+' '+W+','+H+' 0,'+H;
+svg.innerHTML='<polyline class="area" points="'+areaStr+'" fill="'+color+'" />'
++'<polyline points="'+lineStr+'" stroke="'+color+'" />';}
+
+function updateMacroCards(indicators){
+var sparkData=loadSparkData();
+var now=Date.now();
+indicators.forEach(function(ind){
+var name=ind.name;
+if(!sparkData[name])sparkData[name]=[];
+sparkData[name].push({t:now,v:ind.value});
+if(sparkData[name].length>200)sparkData[name]=sparkData[name].slice(-200);
+var card=document.querySelector('[data-macro="'+name+'"]');
+if(!card)return;
+var valEl=card.querySelector('.macro-value');
+var chgEl=card.querySelector('.macro-change');
+if(valEl)valEl.textContent=fmtMacroVal(ind);
+if(chgEl){chgEl.textContent=fmtMacroChg(ind);chgEl.className='macro-change '+(ind.change>=0?'positive':'negative');}
+var svg=card.querySelector('.spark');
+var color=ind.change>=0?'#34d399':'#f87171';
+renderSpark(svg,sparkData[name],color);});
+saveSparkData(sparkData);}
+
+function fetchMacro(){
+fetch('/api/macro').then(function(r){return r.json();}).then(function(d){
+if(d.indicators)updateMacroCards(d.indicators);
+}).catch(function(e){console.log('macro fetch error:',e);});}
+
+/* ── 수급 새로고침 ── */
+var btn=document.getElementById('refresh-btn');
+function doRefresh(){
+if(btn){btn.disabled=true;btn.textContent='\uac31\uc2e0 \uc911...';}
+Promise.all([
+fetch('/api/rankings').then(function(r){return r.json();}),
+fetch('/api/macro').then(function(r){return r.json();})
+]).then(function(results){
+var d=results[0],m=results[1];
+if(d.foreign)updatePanel('fn0v',d.foreign);
+if(d.institutional)updatePanel('gn0v',d.institutional);
+if(m.indicators)updateMacroCards(m.indicators);
+var md=document.getElementById('meta-date');
+if(md&&d.timestamp){var ts=d.timestamp;md.textContent=ts.substring(0,4)+'.'+ts.substring(5,7)+'.'+ts.substring(8,10)+' '+ts.substring(11,16);}
 if(btn){btn.disabled=false;btn.textContent='\u21bb \uc0c8\ub85c\uace0\uce68';}
-}).catch(function(e){console.log('UTONG live update error:',e);if(btn){btn.disabled=false;btn.textContent='\u21bb \uc0c8\ub85c\uace0\uce68';}});
-}
-if(btn){btn.addEventListener('click',updateRankings);}
+}).catch(function(e){console.log('UTONG error:',e);if(btn){btn.disabled=false;btn.textContent='\u21bb \uc0c8\ub85c\uace0\uce68';}});}
+if(btn){btn.addEventListener('click',doRefresh);}
+
+/* ── 자동 폴링: 5분 간격 매크로 업데이트 ── */
+fetchMacro();
+setInterval(fetchMacro,5*60*1000);
 })();
 </script>
 

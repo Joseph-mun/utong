@@ -1,4 +1,4 @@
-"""Vercel Serverless Function - 당일 외국인 순매수 랭킹 JSON API"""
+"""Vercel Serverless Function - 외국인/기관 순매수 랭킹 JSON API"""
 
 import json
 import os
@@ -6,10 +6,9 @@ import sys
 from datetime import datetime, timezone, timedelta
 from http.server import BaseHTTPRequestHandler
 
-# 프로젝트 루트를 path에 추가 (scraper.py 임포트용)
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from scraper import fetch_rankings, fetch_prices
+from kis_client import KISClient
 
 KST = timezone(timedelta(hours=9))
 
@@ -24,22 +23,25 @@ class handler(BaseHTTPRequestHandler):
         market_open = weekday < 5 and 540 <= t <= 930
 
         try:
-            rankings, dates = fetch_rankings()
-            today_rankings = rankings.get("당일", [])
+            kis = KISClient()
+
+            foreign = kis.fetch_rankings("foreign")
+            institutional = kis.fetch_rankings("institutional")
 
             # 현재가 보충
-            codes = [r["code"] for r in today_rankings]
-            if codes:
-                prices = fetch_prices(codes)
-                for r in today_rankings:
+            all_codes = set(r["code"] for r in foreign + institutional)
+            if all_codes:
+                prices = kis.fetch_prices(all_codes)
+                for r in foreign + institutional:
                     p = prices.get(r["code"], {})
-                    r["price"] = p.get("price", 0)
-                    r["change"] = p.get("change", 0.0)
+                    r.setdefault("price", p.get("price", 0))
+                    r.setdefault("change", p.get("change", 0.0))
 
             result = {
                 "timestamp": now.isoformat(),
                 "market_open": market_open,
-                "rankings": today_rankings,
+                "foreign": foreign,
+                "institutional": institutional,
             }
             body = json.dumps(result, ensure_ascii=False)
             status = 200
