@@ -1,4 +1,5 @@
 {
+  "regions": ["icn1"],
   "builds": [
     { "src": "api/*.py", "use": "@vercel/python" },
     { "src": "public/**", "use": "@vercel/static" }
