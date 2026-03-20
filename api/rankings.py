@@ -28,15 +28,6 @@ class handler(BaseHTTPRequestHandler):
             foreign = kis.fetch_rankings("foreign")
             institutional = kis.fetch_rankings("institutional")
 
-            # 현재가 보충
-            all_codes = set(r["code"] for r in foreign + institutional)
-            if all_codes:
-                prices = kis.fetch_prices(all_codes)
-                for r in foreign + institutional:
-                    p = prices.get(r["code"], {})
-                    r.setdefault("price", p.get("price", 0))
-                    r.setdefault("change", p.get("change", 0.0))
-
             result = {
                 "timestamp": now.isoformat(),
                 "market_open": market_open,
