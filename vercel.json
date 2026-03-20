@@ -1,10 +1,14 @@
 {
   "regions": ["icn1"],
+  "crons": [
+    { "path": "/api/collect", "schedule": "*/5 * * * *" }
+  ],
   "builds": [
     { "src": "api/*.py", "use": "@vercel/python" },
     { "src": "public/**", "use": "@vercel/static" }
   ],
   "routes": [
+    { "src": "/api/collect", "dest": "/api/collect.py" },
     { "src": "/api/macro", "dest": "/api/macro.py" },
     { "src": "/api/rankings", "dest": "/api/rankings.py" },
     { "src": "/(.*)", "dest": "/public/$1" }

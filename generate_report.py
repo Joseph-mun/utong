@@ -570,6 +570,15 @@ function fetchMacro(){
 fetch('/api/macro').then(function(r){return r.json();}).then(function(d){
 if(d.indicators)updateMacroCards(d.indicators);
 if(d.timestamp)updateMacroTimestamp(d.timestamp);
+if(d.history){for(var name in d.history){
+var card=document.querySelector('[data-macro="'+name+'"]');
+if(!card)continue;
+var svg=card.querySelector('.spark');
+var pts=d.history[name];
+if(pts&&pts.length>1){
+var last=pts[pts.length-1].v,first=pts[0].v;
+var color=(last>=first)?'#34d399':'#f87171';
+renderSpark(svg,pts,color);}}}
 }).catch(function(e){console.log('macro fetch error:',e);});}
 
 /* ── 수급 새로고침 ── */

@@ -1,4 +1,4 @@
-"""Vercel Serverless Function - 매크로 지표 JSON API"""
+"""Vercel Serverless Function - 매크로 지표 + Redis 이력 JSON API"""
 
 import json
 import os
@@ -6,20 +6,59 @@ import sys
 from datetime import datetime, timezone, timedelta
 from http.server import BaseHTTPRequestHandler
 
+import requests as _req
+
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from macro import fetch_macro_indicators
 
 KST = timezone(timedelta(hours=9))
+REDIS_URL = os.environ.get("UPSTASH_REDIS_REST_URL", "")
+REDIS_TOKEN = os.environ.get("UPSTASH_REDIS_REST_TOKEN", "")
+
+
+def redis_cmd(*args):
+    if not REDIS_URL or not REDIS_TOKEN:
+        return None
+    try:
+        r = _req.post(
+            REDIS_URL,
+            headers={"Authorization": f"Bearer {REDIS_TOKEN}"},
+            json=list(args),
+            timeout=5,
+        )
+        return r.json().get("result")
+    except Exception:
+        return None
 
 
 class handler(BaseHTTPRequestHandler):
     def do_GET(self):
+        now = datetime.now(KST)
+        today_key = f"macro:{now.strftime('%Y%m%d')}"
+
         try:
             indicators = fetch_macro_indicators()
+
+            # Redis에서 오늘 이력 조회
+            history = {}
+            raw = redis_cmd("ZRANGE", today_key, 0, -1)
+            if raw and isinstance(raw, list):
+                for entry_str in raw:
+                    try:
+                        entry = json.loads(entry_str)
+                        t = entry.get("t", "")
+                        for name, val in entry.get("d", {}).items():
+                            if name not in history:
+                                history[name] = []
+                            history[name].append({"t": t, "v": val})
+                    except (json.JSONDecodeError, TypeError):
+                        continue
+
             result = {
-                "timestamp": datetime.now(KST).isoformat(),
+                "timestamp": now.isoformat(),
                 "indicators": indicators,
+                "history": history,
             }
             body = json.dumps(result, ensure_ascii=False)
             status = 200
