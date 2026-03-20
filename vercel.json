@@ -5,22 +5,35 @@
     { "src": "public/**", "use": "@vercel/static" }
   ],
   "routes": [
-    { "src": "/api/collect", "dest": "/api/collect.py" },
-    { "src": "/api/macro", "dest": "/api/macro.py" },
-    { "src": "/api/rankings", "dest": "/api/rankings.py" },
-    { "src": "/api/rankings-periods", "dest": "/api/rankings_periods.py" },
-    { "src": "/(.*)", "dest": "/public/$1" }
-  ],
-  "functions": {
-    "api/rankings_periods.py": { "maxDuration": 60 }
-  },
-  "headers": [
     {
-      "source": "/api/(.*)",
-      "headers": [
-        { "key": "Access-Control-Allow-Origin", "value": "*" },
-        { "key": "Access-Control-Allow-Methods", "value": "GET" }
-      ]
-    }
+      "src": "/api/(.*)",
+      "methods": ["OPTIONS"],
+      "headers": {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "GET, OPTIONS"
+      },
+      "dest": "/api/$1"
+    },
+    {
+      "src": "/api/collect",
+      "dest": "/api/collect.py",
+      "headers": { "Access-Control-Allow-Origin": "*" }
+    },
+    {
+      "src": "/api/macro",
+      "dest": "/api/macro.py",
+      "headers": { "Access-Control-Allow-Origin": "*" }
+    },
+    {
+      "src": "/api/rankings",
+      "dest": "/api/rankings.py",
+      "headers": { "Access-Control-Allow-Origin": "*" }
+    },
+    {
+      "src": "/api/rankings-periods",
+      "dest": "/api/rankings_periods.py",
+      "headers": { "Access-Control-Allow-Origin": "*" }
+    },
+    { "src": "/(.*)", "dest": "/public/$1" }
   ]
 }
