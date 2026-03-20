@@ -1,0 +1,21 @@
+name: Collect Closing Data
+
+on:
+  schedule:
+    # 18:00 KST = 09:00 UTC, 평일만
+    - cron: '0 9 * * 1-5'
+  workflow_dispatch:
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Warm rankings cache
+        run: |
+          echo "Fetching rankings..."
+          curl -s --max-time 30 "https://26utong.vercel.app/api/rankings" | head -c 200
+          echo ""
+          echo "Fetching rankings-periods..."
+          curl -s --max-time 90 "https://26utong.vercel.app/api/rankings-periods" | head -c 200
+          echo ""
+          echo "Done."

@@ -6,9 +6,29 @@ import sys
 from datetime import datetime, timezone, timedelta
 from http.server import BaseHTTPRequestHandler
 
+import requests as _req
+
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from kis_client import KISClient, log
+
+REDIS_URL = os.environ.get("UPSTASH_REDIS_REST_URL", "")
+REDIS_TOKEN = os.environ.get("UPSTASH_REDIS_REST_TOKEN", "")
+
+
+def redis_cmd(*args):
+    if not REDIS_URL or not REDIS_TOKEN:
+        return None
+    try:
+        r = _req.post(
+            REDIS_URL,
+            headers={"Authorization": f"Bearer {REDIS_TOKEN}"},
+            json=list(args),
+            timeout=5,
+        )
+        return r.json().get("result")
+    except Exception:
+        return None
 
 KST = timezone(timedelta(hours=9))
 TOP_N = 10
@@ -163,11 +183,30 @@ class handler(BaseHTTPRequestHandler):
                     "net_volume": {k: v[:TOP_N] for k, v in i_sub.items()},
                 },
             }
+
+            # 데이터가 있으면 Redis에 캐싱
+            has_data = any(v for v in f_net.values()) or any(v for v in i_net.values())
+            if has_data:
+                redis_cmd("SET", "rankings_periods:latest", json.dumps(result, ensure_ascii=False))
+                redis_cmd("EXPIRE", "rankings_periods:latest", 86400)
+
             body = json.dumps(result, ensure_ascii=False)
             status = 200
         except Exception as e:
             body = json.dumps({"error": str(e)}, ensure_ascii=False)
             status = 500
+
+        # 데이터가 비었으면 Redis 캐시에서 로드
+        if status == 200:
+            check = json.loads(body)
+            all_empty = all(
+                len(v) == 0
+                for v in check.get("foreign", {}).get("net_buying", {}).values()
+            )
+            if all_empty:
+                cached = redis_cmd("GET", "rankings_periods:latest")
+                if cached:
+                    body = cached
 
         self.send_response(status)
         self.send_header("Content-Type", "application/json; charset=utf-8")
