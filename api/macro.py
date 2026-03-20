@@ -40,6 +40,19 @@ class handler(BaseHTTPRequestHandler):
         try:
             indicators = fetch_macro_indicators()
 
+            # Redis에 현재값 저장 (호출 시마다 축적)
+            if indicators and REDIS_URL:
+                try:
+                    today_key = f"macro:{now.strftime('%Y%m%d')}"
+                    entry = json.dumps({
+                        "t": now.isoformat(),
+                        "d": {ind["name"]: ind["value"] for ind in indicators},
+                    }, ensure_ascii=False)
+                    redis_cmd("ZADD", today_key, now.timestamp(), entry)
+                    redis_cmd("EXPIRE", today_key, 172800)
+                except Exception:
+                    pass
+
             # Redis에서 오늘 이력 조회
             history = {}
             raw = redis_cmd("ZRANGE", today_key, 0, -1)
