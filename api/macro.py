@@ -16,10 +16,16 @@ KST = timezone(timedelta(hours=9))
 class handler(BaseHTTPRequestHandler):
     def do_GET(self):
         try:
+            import os
             indicators = fetch_macro_indicators()
             result = {
                 "timestamp": datetime.now(KST).isoformat(),
                 "indicators": indicators,
+                "debug": {
+                    "kis_key_set": bool(os.environ.get("KIS_APP_KEY")),
+                    "kis_secret_set": bool(os.environ.get("KIS_APP_SECRET")),
+                    "massive_key_set": bool(os.environ.get("MASSIVE_API_KEY")),
+                },
             }
             body = json.dumps(result, ensure_ascii=False)
             status = 200
