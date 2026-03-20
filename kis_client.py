@@ -44,9 +44,16 @@ class KISClient:
         self._token_expires = None
         self._token_lock = threading.Lock()
 
-        # 토큰 캐시
-        self._cache_dir = Path(__file__).parent / ".cache"
-        self._cache_dir.mkdir(exist_ok=True)
+        # 토큰 캐시 (/tmp 우선 → 로컬 .cache 폴백)
+        import tempfile
+        tmp_dir = Path(tempfile.gettempdir()) / "utong_cache"
+        local_dir = Path(__file__).parent / ".cache"
+        try:
+            tmp_dir.mkdir(exist_ok=True)
+            self._cache_dir = tmp_dir
+        except OSError:
+            local_dir.mkdir(exist_ok=True)
+            self._cache_dir = local_dir
         self._token_file = self._cache_dir / "kis_token.json"
         self._load_cached_token()
 
