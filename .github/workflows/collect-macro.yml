@@ -2,8 +2,8 @@ name: Collect Macro Data
 
 on:
   schedule:
-    # 5분마다 (KST 장중 08:50~15:40 = UTC 23:50~06:40)
-    - cron: '*/5 0-7 * * 1-5'
+    # 5분마다, 평일 24시간 (Brent유/USD/KRW 24시간 거래)
+    - cron: '*/5 * * * 1-5'
   workflow_dispatch:
 
 jobs:

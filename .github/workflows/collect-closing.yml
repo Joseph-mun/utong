@@ -10,6 +10,11 @@ jobs:
   collect:
     runs-on: ubuntu-latest
     steps:
+      - name: Collect daily snapshots
+        run: |
+          echo "Collecting rankings snapshots..."
+          curl -s --max-time 90 "https://26utong.vercel.app/api/collect-rankings" | head -c 200
+          echo ""
       - name: Warm rankings cache
         run: |
           echo "Fetching rankings..."

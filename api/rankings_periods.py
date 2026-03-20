@@ -53,6 +53,41 @@ def fetch_all_histories(kis, stock_meta):
     return histories
 
 
+def merge_redis_histories(histories):
+    """Redis 캐시 이력을 병합하여 3개월 커버리지 확보."""
+    today = datetime.now(KST)
+    merged_dates = 0
+    for offset in range(1, 91):
+        date_str = (today - timedelta(days=offset)).strftime("%Y%m%d")
+        cached = redis_cmd("GET", f"history:daily:{date_str}")
+        if not cached:
+            continue
+        try:
+            daily = json.loads(cached)
+        except (json.JSONDecodeError, TypeError):
+            continue
+        merged_dates += 1
+        for code, data in daily.items():
+            if code not in histories:
+                histories[code] = {
+                    "name": data["name"],
+                    "market": data["market"],
+                    "history": [],
+                }
+            existing_dates = {r["date"] for r in histories[code]["history"]}
+            if date_str not in existing_dates:
+                histories[code]["history"].append({
+                    "date": date_str,
+                    "close": data.get("close", 0),
+                    "foreign_net": data.get("foreign_net", 0),
+                    "foreign_amount": data.get("foreign_amount", 0),
+                    "inst_net": data.get("inst_net", 0),
+                    "inst_amount": data.get("inst_amount", 0),
+                })
+    log(f"  Redis 이력 병합: {merged_dates}일치")
+    return histories
+
+
 def calculate_periods(histories, ranking_data, price_data, investor_type="foreign"):
     """기간별 순매수 / 보유 변동 계산."""
     all_dates = sorted(set(
@@ -155,8 +190,9 @@ class handler(BaseHTTPRequestHandler):
             for r in foreign_rank + inst_rank:
                 stock_meta[r["code"]] = {"name": r["name"], "market": r["market"]}
 
-            # 3) 일별 이력 수집
+            # 3) 일별 이력 수집 + Redis 캐시 병합
             histories = fetch_all_histories(kis, stock_meta)
+            histories = merge_redis_histories(histories)
 
             # 4) 현재가 + 보유비율 수집
             price_data = {}

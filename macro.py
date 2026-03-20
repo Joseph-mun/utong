@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
-"""UTONG - 매크로 지표 수집 (스크래핑 없음, API only)
+"""UTONG - 매크로 지표 수집
 
 데이터 소스:
   - KIS API: KOSPI, KOSDAQ (실시간), S&P500, NASDAQ (해외지수 일간)
-  - EIA API: Brent유 (미국 에너지정보국, 무료)
-  - Massive API: USD/KRW (FX 일간)
+  - Investing.com: Brent유, USD/KRW (실시간 크롤링)
+  - EIA API: Brent유 (폴백)
+  - Massive API: USD/KRW (폴백)
 환경변수: KIS_APP_KEY, KIS_APP_SECRET, MASSIVE_API_KEY
 """
 
@@ -13,6 +14,7 @@ import time
 from datetime import datetime, timedelta
 
 import requests
+from bs4 import BeautifulSoup
 
 UA = ("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
       "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36")
@@ -53,13 +55,17 @@ def fetch_macro_indicators(kis_client=None):
             if data:
                 indicators.append({"name": name, **data})
 
-    # ── 3) EIA: Brent유 (무료) ──
-    brent = _fetch_eia_brent()
+    # ── 3) Brent유: Investing.com 실시간 → EIA 폴백 ──
+    brent = _fetch_investing_brent()
+    if not brent:
+        brent = _fetch_eia_brent()
     if brent:
         indicators.append({"name": "Brent유", **brent})
 
-    # ── 4) Massive: USD/KRW ──
-    fx = _fetch_massive_fx()
+    # ── 4) USD/KRW: Investing.com 실시간 → Massive 폴백 ──
+    fx = _fetch_investing_usdkrw()
+    if not fx:
+        fx = _fetch_massive_fx()
     if fx:
         indicators.append({"name": "USD/KRW", **fx})
 
@@ -185,6 +191,48 @@ def _fetch_kis_world_index(token_info, iscd):
     except Exception as e:
         log(f"  KIS 해외지수 오류 ({iscd}): {e}")
         return None
+
+
+# ── Investing.com 크롤링 (실시간) ────────────────
+
+def _fetch_investing_com(url, category, unit):
+    """Investing.com 크롤링으로 실시간 시세 조회."""
+    try:
+        resp = requests.get(url, headers=HEADERS, timeout=TIMEOUT)
+        resp.raise_for_status()
+        soup = BeautifulSoup(resp.text, "html.parser")
+
+        price_el = soup.find("span", {"data-test": "instrument-price-last"})
+        change_el = soup.find("span", {"data-test": "instrument-price-change"})
+        pct_el = soup.find("span", {"data-test": "instrument-price-change-percent"})
+
+        if not price_el:
+            return None
+
+        value = float(price_el.text.strip().replace(",", ""))
+        change = float(change_el.text.strip().replace(",", "")) if change_el else 0
+        pct_text = pct_el.text.strip().replace("%", "").replace("(", "").replace(")", "") if pct_el else "0"
+        change_pct = float(pct_text)
+
+        return {
+            "value": value, "change": change, "change_pct": change_pct,
+            "category": category, "unit": unit,
+        }
+    except Exception as e:
+        log(f"  Investing.com 크롤링 오류 ({url}): {e}")
+        return None
+
+
+def _fetch_investing_brent():
+    return _fetch_investing_com(
+        "https://kr.investing.com/commodities/brent-oil", "commodity", "$"
+    )
+
+
+def _fetch_investing_usdkrw():
+    return _fetch_investing_com(
+        "https://kr.investing.com/currencies/usd-krw-historical-data", "fx", "원"
+    )
 
 
 # ── EIA API (Brent유, 무료) ──────────────────────

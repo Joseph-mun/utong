@@ -34,6 +34,11 @@
       "dest": "/api/rankings_periods.py",
       "headers": { "Access-Control-Allow-Origin": "*" }
     },
+    {
+      "src": "/api/collect-rankings",
+      "dest": "/api/collect_rankings.py",
+      "headers": { "Access-Control-Allow-Origin": "*" }
+    },
     { "src": "/(.*)", "dest": "/public/$1" }
   ]
 }
