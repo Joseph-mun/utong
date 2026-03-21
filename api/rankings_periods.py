@@ -120,12 +120,24 @@ def calculate_periods(histories, ranking_data, price_data, investor_type="foreig
                 pd = [r for r in data["history"] if r["date"] in target]
                 if not pd:
                     continue
+                p = price_data.get(code, {})
+                current_price = p.get("price", 0)
+
+                if label in ("당일", "전일"):
+                    change = p.get("change", 0)
+                else:
+                    oldest = min(pd, key=lambda x: x["date"])
+                    oldest_close = oldest.get("close", 0)
+                    change = round((current_price - oldest_close) / oldest_close * 100, 2) if oldest_close > 0 else 0
+
                 rows.append({
                     "code": code,
                     "name": data["name"],
                     "market": data["market"],
                     "buy_amount": sum(r[amt_key] for r in pd),
                     "buy_volume": sum(r[vol_key] for r in pd),
+                    "price": current_price,
+                    "change": change,
                 })
             rows.sort(key=lambda x: x["buy_amount"], reverse=True)
             net_result[label] = rows

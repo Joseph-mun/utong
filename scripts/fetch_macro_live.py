@@ -22,7 +22,7 @@ HEADERS = {
     "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
     "Accept-Language": "ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7",
 }
-TTL = 600  # 10분 (5분 cron 주기 + 여유)
+TTL = 7200  # 2시간 (주말/공휴일 cron 미실행 대비)
 
 
 def redis_cmd(*args):
