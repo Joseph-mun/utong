@@ -9,6 +9,7 @@
 환경변수: KIS_APP_KEY, KIS_APP_SECRET, MASSIVE_API_KEY
 """
 
+import json
 import os
 import time
 from datetime import datetime, timedelta
@@ -55,36 +56,34 @@ def fetch_macro_indicators(kis_client=None):
             if data:
                 indicators.append({"name": name, **data})
 
-    # ── 3) Brent유: Investing.com → Yahoo Finance → EIA ──
-    errors = []
+    # ── 3) Brent유: Investing.com → Yahoo → Redis(GH Actions) → EIA ──
     brent = _fetch_investing_brent()
     brent_src = "investing"
     if not brent:
-        errors.append("inv_fail")
         brent = _fetch_yahoo_brent()
         brent_src = "yahoo"
     if not brent:
-        errors.append("yahoo_fail")
+        brent = _fetch_redis_live("macro:live:brent")
+        brent_src = "redis_live"
+    if not brent:
         brent = _fetch_eia_brent()
         brent_src = "eia"
     if brent:
-        brent_src = f"{brent_src}({','.join(errors)})" if errors else brent_src
         indicators.append({"name": "Brent유", "source": brent_src, **brent})
 
-    # ── 4) USD/KRW: Investing.com → Yahoo Finance → Massive ──
-    errors = []
+    # ── 4) USD/KRW: Investing.com → Yahoo → Redis(GH Actions) → Massive ──
     fx = _fetch_investing_usdkrw()
     fx_src = "investing"
     if not fx:
-        errors.append("inv_fail")
         fx = _fetch_yahoo_usdkrw()
         fx_src = "yahoo"
     if not fx:
-        errors.append("yahoo_fail")
+        fx = _fetch_redis_live("macro:live:usdkrw")
+        fx_src = "redis_live"
+    if not fx:
         fx = _fetch_massive_fx()
         fx_src = "massive"
     if fx:
-        fx_src = f"{fx_src}({','.join(errors)})" if errors else fx_src
         indicators.append({"name": "USD/KRW", "source": fx_src, **fx})
 
     log(f"매크로 지표 수집 완료: {len(indicators)}개")
@@ -264,6 +263,39 @@ def _fetch_investing_usdkrw():
     return _fetch_investing_com(
         "https://kr.investing.com/currencies/usd-krw-historical-data", "fx", "원"
     )
+
+
+# ── Redis 라이브 캐시 (GitHub Actions 수집) ──────
+
+_REDIS_URL = os.environ.get("UPSTASH_REDIS_REST_URL", "")
+_REDIS_TOKEN = os.environ.get("UPSTASH_REDIS_REST_TOKEN", "")
+
+
+def _fetch_redis_live(key):
+    """GitHub Actions가 저장한 실시간 데이터를 Redis에서 조회."""
+    if not _REDIS_URL or not _REDIS_TOKEN:
+        return None
+    try:
+        r = requests.post(
+            _REDIS_URL,
+            headers={"Authorization": f"Bearer {_REDIS_TOKEN}"},
+            json=["GET", key],
+            timeout=5,
+        )
+        raw = r.json().get("result")
+        if not raw:
+            return None
+        data = json.loads(raw)
+        return {
+            "value": data["value"],
+            "change": data["change"],
+            "change_pct": data["change_pct"],
+            "category": data["category"],
+            "unit": data["unit"],
+        }
+    except Exception as e:
+        log(f"  Redis 라이브 캐시 오류 ({key}): {e}")
+        return None
 
 
 # ── Yahoo Finance (서버 환경 폴백) ────────────────

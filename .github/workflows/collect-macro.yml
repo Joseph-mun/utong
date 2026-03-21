@@ -10,6 +10,14 @@ jobs:
   collect:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
+      - name: Fetch live prices (Investing.com → Redis)
+        env:
+          UPSTASH_REDIS_REST_URL: ${{ secrets.UPSTASH_REDIS_REST_URL }}
+          UPSTASH_REDIS_REST_TOKEN: ${{ secrets.UPSTASH_REDIS_REST_TOKEN }}
+        run: |
+          pip install -q requests beautifulsoup4
+          python3 scripts/fetch_macro_live.py
       - name: Call collect API
         run: |
           curl -s --max-time 30 "https://26utong.vercel.app/api/collect" || true
