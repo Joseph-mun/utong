@@ -32,16 +32,25 @@ def fetch_macro_indicators(kis_client=None):
     log("매크로 지표 수집 시작")
     indicators = []
 
-    # ── KIS 토큰 준비 (공유 또는 신규) ──
+    # ── KIS 토큰 준비 (KISClient 재사용으로 Redis 캐시 토큰 공유) ──
     kis_token = None
+    if not kis_client:
+        from kis_client import KISClient
+        kis_client = KISClient()
     if kis_client and kis_client._token:
         kis_token = {
             "token": kis_client._token,
             "app_key": kis_client.app_key,
             "app_secret": kis_client.app_secret,
         }
-    else:
-        kis_token = _get_kis_token()
+    elif kis_client:
+        kis_client._ensure_token()
+        if kis_client._token:
+            kis_token = {
+                "token": kis_client._token,
+                "app_key": kis_client.app_key,
+                "app_secret": kis_client.app_secret,
+            }
 
     # ── 1) KIS: KOSPI, KOSDAQ (실시간) ──
     if kis_token:

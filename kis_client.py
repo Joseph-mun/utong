@@ -14,6 +14,9 @@ from pathlib import Path
 
 import requests
 
+_REDIS_URL = os.environ.get("UPSTASH_REDIS_REST_URL", "")
+_REDIS_TOKEN = os.environ.get("UPSTASH_REDIS_REST_TOKEN", "")
+
 SLEEP = 0.08  # API 호출 간격 (초)
 TIMEOUT = 10
 
@@ -59,7 +62,35 @@ class KISClient:
 
     # ── 토큰 관리 ──────────────────────────────
 
+    def _redis_cmd(self, *args):
+        if not _REDIS_URL or not _REDIS_TOKEN:
+            return None
+        try:
+            r = requests.post(
+                _REDIS_URL,
+                headers={"Authorization": f"Bearer {_REDIS_TOKEN}"},
+                json=list(args),
+                timeout=3,
+            )
+            return r.json().get("result")
+        except Exception:
+            return None
+
     def _load_cached_token(self):
+        # Redis 우선 → 파일 폴백
+        try:
+            raw = self._redis_cmd("GET", "kis:token")
+            if raw:
+                data = json.loads(raw)
+                expires = datetime.fromisoformat(data["expires_at"])
+                if datetime.now() < expires - timedelta(minutes=5):
+                    self._token = data["access_token"]
+                    self._token_expires = expires
+                    log("Redis 캐시 KIS 토큰 로드 성공")
+                    return
+        except Exception:
+            pass
+
         if not self._token_file.exists():
             return
         try:
@@ -68,18 +99,26 @@ class KISClient:
             if datetime.now() < expires - timedelta(minutes=5):
                 self._token = data["access_token"]
                 self._token_expires = expires
-                log("캐시된 KIS 토큰 로드 성공")
+                log("파일 캐시 KIS 토큰 로드 성공")
         except (json.JSONDecodeError, KeyError, ValueError):
             pass
 
     def _save_token(self):
         if not self._token or not self._token_expires:
             return
+        token_data = json.dumps({
+            "access_token": self._token,
+            "expires_at": self._token_expires.isoformat(),
+        })
+        # Redis에 저장 (모든 서버리스 함수 공유)
         try:
-            self._token_file.write_text(json.dumps({
-                "access_token": self._token,
-                "expires_at": self._token_expires.isoformat(),
-            }))
+            self._redis_cmd("SET", "kis:token", token_data)
+            self._redis_cmd("EXPIRE", "kis:token", 86400)
+        except Exception:
+            pass
+        # 파일에도 저장 (폴백)
+        try:
+            self._token_file.write_text(token_data)
         except OSError:
             pass
 
