@@ -76,7 +76,7 @@ class handler(BaseHTTPRequestHandler):
             body = json.dumps(result, ensure_ascii=False)
             status = 200
         except Exception as e:
-            body = json.dumps({"error": str(e)}, ensure_ascii=False)
+            body = json.dumps({"error": "Internal server error"}, ensure_ascii=False)
             status = 500
 
         self.send_response(status)

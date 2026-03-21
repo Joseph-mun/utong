@@ -357,9 +357,10 @@ def _fetch_yahoo_usdkrw():
 def _fetch_eia_brent():
     """EIA API로 Brent 원유 현물가 조회."""
     try:
+        eia_key = os.environ.get("EIA_API_KEY", "DEMO_KEY")
         url = (
             "https://api.eia.gov/v2/petroleum/pri/spt/data/"
-            "?api_key=DEMO_KEY"
+            f"?api_key={eia_key}"
             "&frequency=daily&data[0]=value"
             "&facets[series][]=RBRTE"
             "&sort[0][column]=period&sort[0][direction]=desc"

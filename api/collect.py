@@ -19,13 +19,18 @@ REDIS_TOKEN = os.environ.get("UPSTASH_REDIS_REST_TOKEN", "")
 
 def redis_cmd(*args):
     """Upstash REST API로 Redis 명령 실행."""
-    r = requests.post(
-        REDIS_URL,
-        headers={"Authorization": f"Bearer {REDIS_TOKEN}"},
-        json=list(args),
-        timeout=5,
-    )
-    return r.json().get("result")
+    if not REDIS_URL or not REDIS_TOKEN:
+        return None
+    try:
+        r = requests.post(
+            REDIS_URL,
+            headers={"Authorization": f"Bearer {REDIS_TOKEN}"},
+            json=list(args),
+            timeout=5,
+        )
+        return r.json().get("result")
+    except Exception:
+        return None
 
 
 class handler(BaseHTTPRequestHandler):
@@ -57,7 +62,7 @@ class handler(BaseHTTPRequestHandler):
             body = json.dumps(result, ensure_ascii=False)
             status = 200
         except Exception as e:
-            body = json.dumps({"status": "error", "error": str(e)}, ensure_ascii=False)
+            body = json.dumps({"status": "error", "error": "Internal server error"}, ensure_ascii=False)
             status = 500
 
         self.send_response(status)

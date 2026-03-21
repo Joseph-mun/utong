@@ -103,7 +103,7 @@ class handler(BaseHTTPRequestHandler):
             status = 200
             log(f"스냅샷 수집 완료: {saved}개 날짜, {len(stock_meta)}개 종목")
         except Exception as e:
-            body = json.dumps({"error": str(e)}, ensure_ascii=False)
+            body = json.dumps({"error": "Internal server error"}, ensure_ascii=False)
             status = 500
             log(f"스냅샷 수집 오류: {e}")
 

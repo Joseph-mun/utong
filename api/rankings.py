@@ -39,7 +39,7 @@ class handler(BaseHTTPRequestHandler):
         # 장중 판별 (월~금 9:00~15:30)
         weekday = now.weekday()
         t = now.hour * 60 + now.minute
-        market_open = weekday < 5 and 540 <= t <= 930
+        market_open = weekday < 5 and 540 <= t < 930
 
         try:
             kis = KISClient()
@@ -58,7 +58,7 @@ class handler(BaseHTTPRequestHandler):
                 }, ensure_ascii=False)
                 redis_cmd("SET", "rankings:latest", cache)
                 redis_cmd("EXPIRE", "rankings:latest", 86400)  # 24시간
-            elif not has_data:
+            else:
                 # 데이터가 없으면 (장외) Redis 캐시에서 로드
                 cached = redis_cmd("GET", "rankings:latest")
                 if cached:
@@ -75,7 +75,7 @@ class handler(BaseHTTPRequestHandler):
             body = json.dumps(result, ensure_ascii=False)
             status = 200
         except Exception as e:
-            body = json.dumps({"error": str(e)}, ensure_ascii=False)
+            body = json.dumps({"error": "Internal server error"}, ensure_ascii=False)
             status = 500
 
         self.send_response(status)

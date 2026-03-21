@@ -3,7 +3,7 @@ name: Collect Macro Data
 on:
   schedule:
     # 5분마다, 평일 24시간 (Brent유/USD/KRW 24시간 거래)
-    - cron: '*/5 * * * 1-5'
+    - cron: '*/5 * * * *'
   workflow_dispatch:
 
 jobs:
@@ -20,4 +20,4 @@ jobs:
           python3 scripts/fetch_macro_live.py
       - name: Call collect API
         run: |
-          curl -s --max-time 30 "https://26utong.vercel.app/api/collect" || true
+          curl -sf --max-time 30 "https://26utong.vercel.app/api/collect" || echo "Warning: collect API call failed"
