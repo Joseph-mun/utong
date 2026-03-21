@@ -55,18 +55,24 @@ def fetch_macro_indicators(kis_client=None):
             if data:
                 indicators.append({"name": name, **data})
 
-    # ── 3) Brent유: Investing.com 실시간 → EIA 폴백 ──
+    # ── 3) Brent유: Investing.com → Yahoo Finance → EIA ──
     brent = _fetch_investing_brent()
     brent_src = "investing"
+    if not brent:
+        brent = _fetch_yahoo_brent()
+        brent_src = "yahoo"
     if not brent:
         brent = _fetch_eia_brent()
         brent_src = "eia"
     if brent:
         indicators.append({"name": "Brent유", "source": brent_src, **brent})
 
-    # ── 4) USD/KRW: Investing.com 실시간 → Massive 폴백 ──
+    # ── 4) USD/KRW: Investing.com → Yahoo Finance → Massive ──
     fx = _fetch_investing_usdkrw()
     fx_src = "investing"
+    if not fx:
+        fx = _fetch_yahoo_usdkrw()
+        fx_src = "yahoo"
     if not fx:
         fx = _fetch_massive_fx()
         fx_src = "massive"
@@ -250,6 +256,37 @@ def _fetch_investing_usdkrw():
     return _fetch_investing_com(
         "https://kr.investing.com/currencies/usd-krw-historical-data", "fx", "원"
     )
+
+
+# ── Yahoo Finance (서버 환경 폴백) ────────────────
+
+def _fetch_yahoo_finance(ticker, category, unit):
+    """Yahoo Finance API로 시세 조회 (서버 IP에서도 동작)."""
+    try:
+        url = f"https://query1.finance.yahoo.com/v8/finance/chart/{ticker}?interval=1d&range=2d"
+        resp = requests.get(url, headers=HEADERS, timeout=TIMEOUT)
+        if resp.status_code != 200:
+            return None
+        meta = resp.json()["chart"]["result"][0]["meta"]
+        value = meta["regularMarketPrice"]
+        prev = meta["chartPreviousClose"]
+        change = round(value - prev, 2)
+        change_pct = round(change / prev * 100, 2) if prev else 0
+        return {
+            "value": value, "change": change, "change_pct": change_pct,
+            "category": category, "unit": unit,
+        }
+    except Exception as e:
+        log(f"  Yahoo Finance 오류 ({ticker}): {e}")
+        return None
+
+
+def _fetch_yahoo_brent():
+    return _fetch_yahoo_finance("BZ=F", "commodity", "$")
+
+
+def _fetch_yahoo_usdkrw():
+    return _fetch_yahoo_finance("USDKRW=X", "fx", "원")
 
 
 # ── EIA API (Brent유, 무료) ──────────────────────
