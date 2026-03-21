@@ -268,11 +268,34 @@ def _fetch_investing_usdkrw():
 
 # ── Yahoo Finance (서버 환경 폴백) ────────────────
 
-def _fetch_yahoo_finance(ticker, category, unit):
-    """Yahoo Finance API로 시세 조회 (서버 IP에서도 동작)."""
+def _get_yahoo_session():
+    """Yahoo Finance crumb+cookie 세션 생성."""
+    session = requests.Session()
+    session.headers["User-Agent"] = UA
     try:
-        url = f"https://query1.finance.yahoo.com/v8/finance/chart/{ticker}?interval=1d&range=2d"
-        resp = requests.get(url, headers=HEADERS, timeout=TIMEOUT)
+        session.get("https://fc.yahoo.com", timeout=5)
+        crumb_resp = session.get(
+            "https://query2.finance.yahoo.com/v1/test/getcrumb", timeout=5
+        )
+        if crumb_resp.status_code == 200:
+            return session, crumb_resp.text
+    except Exception:
+        pass
+    return None, None
+
+
+def _fetch_yahoo_finance(ticker, category, unit):
+    """Yahoo Finance API로 시세 조회 (crumb+cookie 인증)."""
+    try:
+        session, crumb = _get_yahoo_session()
+        if not session or not crumb:
+            log(f"  Yahoo Finance 세션 실패 ({ticker})")
+            return None
+        url = (
+            f"https://query2.finance.yahoo.com/v8/finance/chart/{ticker}"
+            f"?interval=1d&range=2d&crumb={crumb}"
+        )
+        resp = session.get(url, timeout=TIMEOUT)
         if resp.status_code != 200:
             return None
         meta = resp.json()["chart"]["result"][0]["meta"]
