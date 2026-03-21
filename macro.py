@@ -56,27 +56,35 @@ def fetch_macro_indicators(kis_client=None):
                 indicators.append({"name": name, **data})
 
     # ── 3) Brent유: Investing.com → Yahoo Finance → EIA ──
+    errors = []
     brent = _fetch_investing_brent()
     brent_src = "investing"
     if not brent:
+        errors.append("inv_fail")
         brent = _fetch_yahoo_brent()
         brent_src = "yahoo"
     if not brent:
+        errors.append("yahoo_fail")
         brent = _fetch_eia_brent()
         brent_src = "eia"
     if brent:
+        brent_src = f"{brent_src}({','.join(errors)})" if errors else brent_src
         indicators.append({"name": "Brent유", "source": brent_src, **brent})
 
     # ── 4) USD/KRW: Investing.com → Yahoo Finance → Massive ──
+    errors = []
     fx = _fetch_investing_usdkrw()
     fx_src = "investing"
     if not fx:
+        errors.append("inv_fail")
         fx = _fetch_yahoo_usdkrw()
         fx_src = "yahoo"
     if not fx:
+        errors.append("yahoo_fail")
         fx = _fetch_massive_fx()
         fx_src = "massive"
     if fx:
+        fx_src = f"{fx_src}({','.join(errors)})" if errors else fx_src
         indicators.append({"name": "USD/KRW", "source": fx_src, **fx})
 
     log(f"매크로 지표 수집 완료: {len(indicators)}개")
