@@ -202,9 +202,9 @@ def _fetch_investing_com(url, category, unit):
         resp.raise_for_status()
         soup = BeautifulSoup(resp.text, "html.parser")
 
-        price_el = soup.find("span", {"data-test": "instrument-price-last"})
-        change_el = soup.find("span", {"data-test": "instrument-price-change"})
-        pct_el = soup.find("span", {"data-test": "instrument-price-change-percent"})
+        price_el = soup.find(attrs={"data-test": "instrument-price-last"})
+        change_el = soup.find(attrs={"data-test": "instrument-price-change"})
+        pct_el = soup.find(attrs={"data-test": "instrument-price-change-percent"})
 
         if not price_el:
             return None
@@ -225,7 +225,7 @@ def _fetch_investing_com(url, category, unit):
 
 def _fetch_investing_brent():
     return _fetch_investing_com(
-        "https://kr.investing.com/commodities/brent-oil", "commodity", "$"
+        "https://kr.investing.com/commodities/brent-oil-historical-data", "commodity", "$"
     )
 
 
