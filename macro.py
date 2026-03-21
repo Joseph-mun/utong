@@ -57,17 +57,21 @@ def fetch_macro_indicators(kis_client=None):
 
     # ── 3) Brent유: Investing.com 실시간 → EIA 폴백 ──
     brent = _fetch_investing_brent()
+    brent_src = "investing"
     if not brent:
         brent = _fetch_eia_brent()
+        brent_src = "eia"
     if brent:
-        indicators.append({"name": "Brent유", **brent})
+        indicators.append({"name": "Brent유", "source": brent_src, **brent})
 
     # ── 4) USD/KRW: Investing.com 실시간 → Massive 폴백 ──
     fx = _fetch_investing_usdkrw()
+    fx_src = "investing"
     if not fx:
         fx = _fetch_massive_fx()
+        fx_src = "massive"
     if fx:
-        indicators.append({"name": "USD/KRW", **fx})
+        indicators.append({"name": "USD/KRW", "source": fx_src, **fx})
 
     log(f"매크로 지표 수집 완료: {len(indicators)}개")
     return indicators
